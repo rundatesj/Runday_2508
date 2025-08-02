@@ -562,10 +562,11 @@
     </div>
 
     <script>
-        // 설정 - 공개 Google Sheets 방식
+        // 설정 - 공개 Google Sheets 방식 (CORS 우회)
         const SHEETS_CONFIG = {
-            // Google Sheets를 공개로 설정한 후 CSV URL 사용
-            publicSheetUrl: 'https://docs.google.com/spreadsheets/d/1o2mVIWLTF0wsInZdufL0dWNEvae7lkWRTmK3o1rdQ8w/export?format=csv&gid=0',
+            // CORS 프록시를 사용한 안전한 접근
+            publicSheetUrl: 'https://cors-anywhere.herokuapp.com/https://docs.google.com/spreadsheets/d/1o2mVIWLTF0wsInZdufL0dWNEvae7lkWRTmK3o1rdQ8w/export?format=csv&gid=0',
+            directUrl: 'https://docs.google.com/spreadsheets/d/1o2mVIWLTF0wsInZdufL0dWNEvae7lkWRTmK3o1rdQ8w/export?format=csv&gid=0',
             sheetId: '1o2mVIWLTF0wsInZdufL0dWNEvae7lkWRTmK3o1rdQ8w'
         };
 
