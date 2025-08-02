@@ -699,7 +699,7 @@
                 document.getElementById('teamDisplay').style.color = '#999';
                 document.getElementById('teamDisplay').style.fontWeight = 'normal';
                 
-                alert('✅ 기록이 저장되었습니다!\n💡 Google Sheets 동기화는 관리자가 수동으로 진행합니다.');
+                alert('✅ 기록이 저장되었습니다!');
                 
                 // Google Form 링크 자동 생성 (관리자용)
                 updateGoogleFormLink(record);
@@ -783,20 +783,7 @@
             updateDisplay();
             saveToLocalStorage(); // 로컬 저장소에 즉시 반영
             
-            // Google Sheets에서도 삭제 시도 (백그라운드)
-            try {
-                await fetch(SHEETS_CONFIG.webAppUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'delete',
-                        id: id
-                    })
-                });
-                console.log('Google Sheets에서도 삭제 완료');
-            } catch (error) {
-                console.log('Google Sheets 삭제 실패, 로컬에서만 삭제됨');
-            }
+            console.log('기록이 삭제되었습니다 (로컬에서만)');
         }
 
         function updateDisplay() {
