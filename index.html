@@ -4,48 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>August Run - 팀 마일리지 대결</title>
+    <title>August Run - Reset Version</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="team-card team-a" id="teamA">
-            <div class="team-rank">🏆 <span id="rankA">1위</span></div>
-            <div class="team-name">🥛 우유팀</div>
-            <div class="team-total"><span id="totalA">0</span> km</div>
-        </div>
-        <div class="team-card team-b" id="teamB">
-            <div class="team-rank">🏆 <span id="rankB">1위</span></div>
-            <div class="team-name">🍇 포도팀</div>
-            <div class="team-total"><span id="totalB">0</span> km</div>
-        </div>
-    </div>
+    <header>
+        <h1>🏃 August Run - 팀 대시보드 🏃‍♀️</h1>
+    </header>
+    <main>
+        <section class="dashboard">
+            <div class="team-card" id="teamA">
+                <h2>🥛 우유팀</h2>
+                <p><span id="teamATotal">0</span> km</p>
+            </div>
+            <div class="team-card" id="teamB">
+                <h2>🍇 포도팀</h2>
+                <p><span id="teamBTotal">0</span> km</p>
+            </div>
+        </section>
 
-    <div class="input-section">
-        <h2>오늘의 러닝 기록 입력</h2>
-        <form id="recordForm">
-            <select id="memberSelect" required>
-                <option value="">크루원을 선택하세요</option>
-            </select>
-            <div id="teamDisplay">팀 정보 없음</div>
-            <input type="date" id="dateInput" required>
-            <input type="number" id="distanceInput" placeholder="거리 (km)" step="0.1" required>
-            <button type="submit">기록 추가</button>
-        </form>
-    </div>
+        <section class="form-section">
+            <h2>기록 입력</h2>
+            <form id="recordForm">
+                <select id="memberSelect" required>
+                    <option value="">크루원을 선택하세요</option>
+                </select>
+                <input type="date" id="dateInput" required>
+                <input type="number" id="distanceInput" placeholder="거리 (km)" step="0.1" required>
+                <button type="submit">기록 추가</button>
+            </form>
+        </section>
 
-    <div class="charts">
-        <canvas id="teamChart"></canvas>
-        <canvas id="personalChart"></canvas>
-    </div>
+        <section class="history-section">
+            <h2>최근 기록</h2>
+            <ul id="historyList">
+                <li>아직 기록이 없습니다</li>
+            </ul>
+        </section>
 
-    <div class="history-section">
-        <h2>최근 기록</h2>
-        <div id="historyList"></div>
-    </div>
-
+        <section class="charts-section">
+            <div>
+                <h3>팀별 누적 거리</h3>
+                <canvas id="teamChart"></canvas>
+            </div>
+            <div>
+                <h3>개인별 누적 거리</h3>
+                <canvas id="personalChart"></canvas>
+            </div>
+        </section>
+    </main>
     <script src="data.js"></script>
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
