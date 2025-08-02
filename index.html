@@ -9,11 +9,11 @@
             const csvContent = [
                 headers.join(','),
                 ...records.map(record => [
-                    record.date,
-                    record.time,
-                    record.team,
-                    record.name,
-                    record.distance
+                    record.date || '',
+                    record.time || '',
+                    record.team || '',
+                    record.name || '',
+                    record.distance || 0
                 ].join(','))
             ].join('\n');
             
@@ -21,7 +21,8 @@
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', `러닝기록_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '')}.csv`);
+            const fileName = '러닝기록_' + new Date().toLocaleDateString('ko-KR').replace(/\./g, '') + '.csv';
+            link.setAttribute('download', fileName);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
@@ -840,7 +841,9 @@
             `;
             
             const container = document.querySelector('.container');
-            container.insertBefore(setupDiv, container.firstChild);
+            if (container) {
+                container.insertBefore(setupDiv, container.firstChild);
+            }
         }
 
         // 크루원 선택 드롭다운 업데이트
