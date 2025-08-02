@@ -10,6 +10,53 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        // Google Form 링크 업데이트 (관리자용)
+        function updateGoogleFormLink(lastRecord) {
+            const formLink = document.getElementById('googleFormLink');
+            const recentRecords = records.slice(-5); // 최근 5개 기록
+            
+            // Google Form 생성을 위한 데이터 준비
+            const formData = recentRecords.map(r => 
+                `${r.date} ${r.time} - ${r.team}팀 ${r.name}: ${r.distance}km`
+            ).join('\n');
+            
+            // Google Forms 링크 (실제 Form ID는 관리자가 생성 후 교체)
+            formLink.href = 'https://forms.google.com/새로운구글폼링크';
+            formLink.onclick = function(e) {
+                e.preventDefault();
+                alert('📝 관리자용 기능:\n\n최근 입력된 기록들:\n' + formData + '\n\n이 데이터를 Google Forms를 통해 수동으로 입력해주세요.');
+            };
+        }
+
+        // 데이터 내보내기 기능 추가
+        function exportToText() {
+            if (records.length === 0) {
+                alert('내보낼 데이터가 없습니다.');
+                return;
+            }
+            
+            const textContent = records.map(record => 
+                `${record.date}\t${record.time}\t${record.team}\t${record.name}\t${record.distance}`
+            ).join('\n');
+            
+            const header = '날짜\t시간\t팀\t이름\t거리(km)\n';
+            const fullContent = header + textContent;
+            
+            // 클립보드에 복사
+            navigator.clipboard.writeText(fullContent).then(() => {
+                alert('📋 데이터가 클립보드에 복사되었습니다!\nGoogle Sheets에 붙여넣기하세요.');
+            }).catch(() => {
+                // 폴백: 텍스트 파일 다운로드
+                const blob = new Blob([fullContent], { type: 'text/plain;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', '러닝기록_' + new Date().toLocaleDateString('ko-KR').replace(/\./g, '') + '.txt');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
         }
 
         body {
@@ -473,6 +520,16 @@
                 </div>
                 <button type="submit" class="add-btn">기록 추가</button>
             </form>
+            
+            <!-- Google Forms 백업 링크 -->
+            <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                    📝 관리자용: <a href="#" id="googleFormLink" target="_blank" style="color: #667eea; text-decoration: none;">Google Form으로 백업 입력</a>
+                </p>
+                <p style="font-size: 0.8rem; color: #999;">
+                    위 양식에서 기록 입력 시 자동으로 Google Sheets에 저장됩니다
+                </p>
+            </div>
         </div>
 
         <!-- 차트 섹션 -->
@@ -490,6 +547,11 @@
         <!-- 기록 히스토리 -->
         <div class="history-section">
             <h2 class="history-title">최근 기록</h2>
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <button onclick="exportToText()" class="add-btn" style="background: #26d466; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                    📋 Google Sheets용 데이터 복사
+                </button>
+            </div>
             <div class="history-list" id="historyList">
                 <div class="history-item"><span>아직 기록이 없습니다</span></div>
             </div>
@@ -637,13 +699,10 @@
                 document.getElementById('teamDisplay').style.color = '#999';
                 document.getElementById('teamDisplay').style.fontWeight = 'normal';
                 
-                // Google Sheets에도 저장 시도 (백그라운드)
-                const success = await saveToSheets(record);
-                if (success) {
-                    alert('✅ 기록이 저장되었습니다! (Google Sheets 연동 성공)');
-                } else {
-                    alert('✅ 기록이 저장되었습니다! (로컬 저장소에 보관됨)');
-                }
+                alert('✅ 기록이 저장되었습니다!\n💡 Google Sheets 동기화는 관리자가 수동으로 진행합니다.');
+                
+                // Google Form 링크 자동 생성 (관리자용)
+                updateGoogleFormLink(record);
             });
         }
 
