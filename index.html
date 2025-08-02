@@ -460,7 +460,7 @@
                 <canvas id="teamChart" class="chart-canvas"></canvas>
             </div>
             <div class="chart-container">
-                <h3 class="chart-title">일일 기록 추이</h3>
+                <h3 class="chart-title">개인별 누적 기록</h3>
                 <canvas id="dailyChart" class="chart-canvas"></canvas>
             </div>
         </div>
@@ -730,18 +730,41 @@
         }
 
         function updateDailyChart() {
-            const dailyStats = {};
+            // 개인별 누적 기록 계산
+            const memberStats = {};
             
             records.forEach(record => {
-                if (!dailyStats[record.date]) {
-                    dailyStats[record.date] = { 우유: 0, 포도: 0 };
+                if (!memberStats[record.name]) {
+                    memberStats[record.name] = {
+                        total: 0,
+                        team: record.team
+                    };
                 }
-                dailyStats[record.date][record.team] += record.distance;
+                memberStats[record.name].total += record.distance;
             });
             
-            const dates = Object.keys(dailyStats).sort();
-            const milkData = dates.map(date => dailyStats[date].우유);
-            const grapeData = dates.map(date => dailyStats[date].포도);
+            // 팀별로 분류하고 상위 기록자들만 표시 (각 팀 상위 8명)
+            const milkMembers = Object.entries(memberStats)
+                .filter(([name, data]) => data.team === '우유')
+                .sort(([,a], [,b]) => b.total - a.total)
+                .slice(0, 8);
+                
+            const grapeMembers = Object.entries(memberStats)
+                .filter(([name, data]) => data.team === '포도')
+                .sort(([,a], [,b]) => b.total - a.total)
+                .slice(0, 8);
+            
+            const allTopMembers = [...milkMembers, ...grapeMembers]
+                .sort(([,a], [,b]) => b.total - a.total);
+            
+            const names = allTopMembers.map(([name]) => name);
+            const distances = allTopMembers.map(([, data]) => data.total);
+            const backgroundColors = allTopMembers.map(([, data]) => 
+                data.team === '우유' ? 'rgba(255, 107, 53, 0.7)' : 'rgba(78, 205, 196, 0.7)'
+            );
+            const borderColors = allTopMembers.map(([, data]) => 
+                data.team === '우유' ? '#FF6B35' : '#4ECDC4'
+            );
             
             const ctx = document.getElementById('dailyChart').getContext('2d');
             
@@ -750,21 +773,15 @@
             }
             
             dailyChart = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
-                    labels: dates,
+                    labels: names,
                     datasets: [{
-                        label: '🥛 우유팀',
-                        data: milkData,
-                        borderColor: '#FF6B35',
-                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: '🍇 포도팀',
-                        data: grapeData,
-                        borderColor: '#4ECDC4',
-                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
-                        tension: 0.4
+                        label: '누적 거리 (km)',
+                        data: distances,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 2
                     }]
                 },
                 options: {
@@ -777,11 +794,26 @@
                                 display: true,
                                 text: '거리 (km)'
                             }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '크루원'
+                            }
                         }
                     },
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const memberName = context.label;
+                                    const team = memberStats[memberName].team;
+                                    return `${team}팀 ${memberName}: ${context.parsed.y.toFixed(1)}km`;
+                                }
+                            }
                         }
                     }
                 }
