@@ -1,1 +1,51 @@
-<!-- index.html content here -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>August Run - 팀 마일리지 대결</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="team-card team-a" id="teamA">
+            <div class="team-rank">🏆 <span id="rankA">1위</span></div>
+            <div class="team-name">🥛 우유팀</div>
+            <div class="team-total"><span id="totalA">0</span> km</div>
+        </div>
+        <div class="team-card team-b" id="teamB">
+            <div class="team-rank">🏆 <span id="rankB">1위</span></div>
+            <div class="team-name">🍇 포도팀</div>
+            <div class="team-total"><span id="totalB">0</span> km</div>
+        </div>
+    </div>
+
+    <div class="input-section">
+        <h2>오늘의 러닝 기록 입력</h2>
+        <form id="recordForm">
+            <select id="memberSelect" required>
+                <option value="">크루원을 선택하세요</option>
+            </select>
+            <div id="teamDisplay">팀 정보 없음</div>
+            <input type="date" id="dateInput" required>
+            <input type="number" id="distanceInput" placeholder="거리 (km)" step="0.1" required>
+            <button type="submit">기록 추가</button>
+        </form>
+    </div>
+
+    <div class="charts">
+        <canvas id="teamChart"></canvas>
+        <canvas id="personalChart"></canvas>
+    </div>
+
+    <div class="history-section">
+        <h2>최근 기록</h2>
+        <div id="historyList"></div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
