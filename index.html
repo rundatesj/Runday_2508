@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>August Run - 팀 마일리지 대결</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>🏃‍♂️ August Run 팀 대결 🏃‍♀️</h1>
+        <p>8월 마일리지 챌린지 - 팀별 누적 거리 경쟁</p>
+    </header>
+    <main>
+        <section class="dashboard">
+            <div class="team-card" id="teamA">
+                <div class="rank">🥇 1위</div>
+                <img src="우유팀.jpg" alt="우유팀" class="team-image">
+                <div class="team-info">
+                    <div class="team-name">우유팀</div>
+                    <div class="team-total" id="teamATotal">0 km</div>
+                    <div class="team-members" id="teamAMembers">아직 기록이 없습니다</div>
+                </div>
+            </div>
+            <div class="team-card" id="teamB">
+                <div class="rank">🥇 1위</div>
+                <img src="포도팀.jpg" alt="포도팀" class="team-image">
+                <div class="team-info">
+                    <div class="team-name">포도팀</div>
+                    <div class="team-total" id="teamBTotal">0 km</div>
+                    <div class="team-members" id="teamBMembers">아직 기록이 없습니다</div>
+                </div>
+            </div>
+        </section>
+        <section class="input-section">
+            <h2>오늘의 러닝 기록 입력</h2>
+            <form id="recordForm">
+                <select id="memberSelect" required>
+                    <option value="">크루원을 선택하세요</option>
+                </select>
+                <div id="teamDisplay">팀 정보 없음</div>
+                <input type="date" id="dateInput" required>
+                <input type="number" id="distanceInput" placeholder="거리 (km)" required>
+                <button type="submit">기록 추가</button>
+            </form>
+        </section>
+        <section class="charts">
+            <div>
+                <h3>팀별 누적 거리</h3>
+                <canvas id="teamChart"></canvas>
+            </div>
+            <div>
+                <h3>개인별 누적 기록</h3>
+                <canvas id="personalChart"></canvas>
+            </div>
+        </section>
+        <section class="history">
+            <h2>최근 기록</h2>
+            <div id="historyList">아직 기록이 없습니다</div>
+        </section>
+    </main>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
