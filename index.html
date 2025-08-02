@@ -591,6 +591,8 @@
                 return;
             }
             
+            setLoading(true);
+            
             const newRecord = {
                 id: Date.now(),
                 userId,
@@ -600,16 +602,13 @@
                 timestamp: new Date().toISOString()
             };
             
-            // 로컬에 바로 추가
-            records.push(newRecord);
-            document.getElementById('distance').value = '';
-            updateUI();
-            alert('기록이 추가되었습니다!');
-            
-            // 구글 시트에 저장 시도
             try {
+                // 구글 시트에 저장 시도
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    credentials: 'omit',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -623,18 +622,34 @@
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
                 if (result.success) {
                     console.log('구글 시트에 성공적으로 저장됨');
-                    loadData(); // 데이터 새로고침
+                    document.getElementById('distance').value = '';
+                    alert('기록이 추가되었습니다!');
+                    await loadData(); // 데이터 새로고침
+                } else {
+                    throw new Error(result.message || '저장 실패');
                 }
             } catch (error) {
-                console.log('구글 시트 연동 실패 (로컬에는 저장됨):', error);
+                console.log('구글 시트 연동 실패, 로컬에 저장:', error.message);
+                
+                // 구글 시트 실패시 로컬에만 저장
+                records.push(newRecord);
+                document.getElementById('distance').value = '';
+                alert('기록이 추가되었습니다! (로컬 저장)\n※ 구글 시트 연동이 일시적으로 불가능합니다.');
+                updateUI();
+            } finally {
+                setLoading(false);
             }
         }
         
         // 기록 삭제
-        async function deleteRecord(record) {
+        async function deleteRecord(recordData) {
             const adminPassword = document.getElementById('admin-password').value;
             if (!adminPassword) {
                 alert('관리자 비밀번호를 입력하세요.');
@@ -642,6 +657,7 @@
             }
             
             try {
+                setLoading(true);
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     headers: {
@@ -649,8 +665,8 @@
                     },
                     body: JSON.stringify({
                         action: 'delete',
-                        timestamp: record.timestamp,
-                        userId: record.userId,
+                        timestamp: recordData.timestamp,
+                        userId: recordData.userId,
                         adminPassword: adminPassword
                     })
                 });
@@ -659,13 +675,19 @@
                 
                 if (result.success) {
                     alert('기록이 삭제되었습니다!');
-                    loadData();
+                    await loadData();
                 } else {
                     alert('삭제 실패: ' + result.message);
                 }
             } catch (error) {
                 console.error('기록 삭제 실패:', error);
                 alert('기록 삭제에 실패했습니다.');
+                
+                // 로컬에서도 제거
+                records = records.filter(r => r.id !== recordData.id);
+                updateUI();
+            } finally {
+                setLoading(false);
             }
         }
         
@@ -771,6 +793,70 @@
                             data: chartData.map(d => d.milk),
                             backgroundColor: '#8b5cf6',
                             borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 기록 테이블 업데이트
+        function updateRecordsTable() {
+            const tbody = document.getElementById('records-tbody');
+            const isAdminMode = !document.getElementById('admin-panel').classList.contains('hidden');
+            
+            if (records.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${isAdminMode ? '6' : '5'}" class="empty-state">
+                            ${loading ? '데이터를 불러오는 중...' : '아직 기록이 없습니다.'}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const recentRecords = records.slice(-20).reverse();
+            
+            tbody.innerHTML = recentRecords.map(record => {
+                const recordJson = JSON.stringify(record);
+                return `
+                    <tr>
+                        <td>${record.userId}</td>
+                        <td>
+                            <span class="team-badge ${record.team === '우유' ? 'milk' : 'grape'}">
+                                ${record.team === '우유' ? '🥛 우유팀' : '🍇 포도팀'}
+                            </span>
+                        </td>
+                        <td>${record.date}</td>
+                        <td><strong>${record.distance} km</strong></td>
+                        <td>${new Date(record.timestamp).toLocaleString('ko-KR')}</td>
+                        ${isAdminMode ? `
+                            <td>
+                                <button class="delete-btn" onclick='deleteRecord(${recordJson})'>
+                                    삭제
+                                </button>
+                            </td>
+                        ` : ''}
+                    </tr>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html> 4
                         },
                         {
                             label: '🍇 포도팀',
