@@ -4,87 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>August Run - 팀 마일리지 대결</title>
+    <title>August Run</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script defer src="app.js"></script>
 </head>
 <body>
     <header class="header">
         <h1>🏃‍♂️ August Run 팀 대결 🏃‍♀️</h1>
-        <p>8월 마일리지 챌린지 - 팀별 누적 거리 경쟁</p>
     </header>
-
     <div class="container">
-        <!-- 팀 대시보드 -->
-        <div class="dashboard">
-            <div class="team-card team-a">
-                <div class="winner-badge" id="winnerA">🏆 1위</div>
-                <img src="우유.jpg" alt="우유팀" class="team-image">
-                <div class="team-content">
-                    <div class="team-name">🥛 우유팀</div>
-                    <div class="team-total" id="teamATotal">0</div>
-                    <div class="team-unit">km</div>
-                    <div class="team-members" id="teamAMembers">
-                        <div class="member-item"><span>아직 기록이 없습니다</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="team-card team-b">
-                <div class="winner-badge" id="winnerB">🏆 1위</div>
-                <img src="포도.jpg" alt="포도팀" class="team-image">
-                <div class="team-content">
-                    <div class="team-name">🍇 포도팀</div>
-                    <div class="team-total" id="teamBTotal">0</div>
-                    <div class="team-unit">km</div>
-                    <div class="team-members" id="teamBMembers">
-                        <div class="member-item"><span>아직 기록이 없습니다</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 기록 입력 -->
-        <div class="input-section">
-            <h2 class="input-title">오늘의 러닝 기록 입력</h2>
-            <form class="input-form" id="recordForm">
-                <div class="form-group">
-                    <label for="memberSelect">크루원 선택</label>
-                    <select id="memberSelect" required>
-                        <option value="">크루원을 선택하세요</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>소속팀</label>
-                    <div id="teamDisplay" class="team-display">팀 정보 없음</div>
-                </div>
-                <div class="form-group">
-                    <label for="distance">거리 (km)</label>
-                    <input type="number" id="distance" step="0.1" min="0" required>
-                </div>
-                <button type="submit" class="add-btn">기록 추가</button>
-            </form>
-        </div>
-
-        <!-- 차트 -->
-        <div class="charts-section">
-            <div class="chart-container">
-                <h3 class="chart-title">팀별 누적 거리</h3>
-                <canvas id="teamChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h3 class="chart-title">개인별 누적 기록</h3>
-                <canvas id="dailyChart"></canvas>
-            </div>
-        </div>
-
-        <!-- 기록 히스토리 -->
+        <form class="input-form" id="recordForm">
+            <select id="memberSelect" required></select>
+            <div id="teamDisplay" class="team-display">팀 정보 없음</div>
+            <input type="date" id="dateInput" required>
+            <input type="number" id="distanceInput" placeholder="거리 (km)" step="0.1" required>
+            <button type="submit" class="add-btn">기록 추가</button>
+        </form>
         <div class="history-section">
-            <h2 class="history-title">최근 기록</h2>
-            <div class="history-list" id="historyList">
-                <div class="history-item"><span>아직 기록이 없습니다</span></div>
-            </div>
+            <h2>최근 기록</h2>
+            <div id="historyList"></div>
         </div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>
