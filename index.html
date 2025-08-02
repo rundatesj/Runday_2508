@@ -523,8 +523,33 @@
         document.addEventListener('DOMContentLoaded', function() {
             setupMemberSelect();
             setupEventListeners();
-            loadFromSheets();
+            loadFromLocalStorage(); // 로컬 저장소에서 먼저 로드
+            loadFromSheets(); // Google Sheets에서도 시도
         });
+
+        // 로컬 저장소에서 데이터 로드
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('runningRecords');
+                if (saved) {
+                    records = JSON.parse(saved);
+                    updateDisplay();
+                    console.log('로컬 저장소에서 데이터 로드:', records.length + '개 기록');
+                }
+            } catch (error) {
+                console.error('로컬 저장소 로드 실패:', error);
+            }
+        }
+
+        // 로컬 저장소에 데이터 저장
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('runningRecords', JSON.stringify(records));
+                console.log('로컬 저장소에 저장 완료');
+            } catch (error) {
+                console.error('로컬 저장소 저장 실패:', error);
+            }
+        }
 
         function setupMemberSelect() {
             const select = document.getElementById('memberSelect');
@@ -605,16 +630,19 @@
 
                 records.push(record);
                 updateDisplay();
+                saveToLocalStorage(); // 로컬 저장소에 즉시 저장
+                
                 this.reset();
                 document.getElementById('teamDisplay').textContent = '팀 정보 없음';
                 document.getElementById('teamDisplay').style.color = '#999';
                 document.getElementById('teamDisplay').style.fontWeight = 'normal';
                 
+                // Google Sheets에도 저장 시도 (백그라운드)
                 const success = await saveToSheets(record);
                 if (success) {
-                    alert('기록이 Google Sheets에 저장되었습니다!');
+                    alert('✅ 기록이 저장되었습니다! (Google Sheets 연동 성공)');
                 } else {
-                    alert('기록이 추가되었지만 Google Sheets 저장에 실패했습니다.');
+                    alert('✅ 기록이 저장되었습니다! (로컬 저장소에 보관됨)');
                 }
             });
         }
@@ -656,7 +684,9 @@
 
         async function saveToSheets(record) {
             try {
+                console.log('저장 시도:', record);
                 showLoading('저장 중...');
+                
                 const response = await fetch(SHEETS_CONFIG.webAppUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -665,10 +695,22 @@
                         record: record
                     })
                 });
+                
+                console.log('응답 상태:', response.status);
                 const result = await response.json();
-                return result.success;
+                console.log('응답 결과:', result);
+                
+                if (result.success) {
+                    console.log('저장 성공!');
+                    return true;
+                } else {
+                    console.error('저장 실패:', result.error);
+                    alert('저장 실패: ' + (result.error || '알 수 없는 오류'));
+                    return false;
+                }
             } catch (error) {
-                console.error('저장 실패:', error);
+                console.error('네트워크 오류:', error);
+                alert('네트워크 오류: ' + error.message);
                 return false;
             } finally {
                 hideLoading();
@@ -680,7 +722,9 @@
             
             records = records.filter(r => r.id !== id);
             updateDisplay();
+            saveToLocalStorage(); // 로컬 저장소에 즉시 반영
             
+            // Google Sheets에서도 삭제 시도 (백그라운드)
             try {
                 await fetch(SHEETS_CONFIG.webAppUrl, {
                     method: 'POST',
@@ -690,8 +734,9 @@
                         id: id
                     })
                 });
+                console.log('Google Sheets에서도 삭제 완료');
             } catch (error) {
-                console.error('삭제 실패:', error);
+                console.log('Google Sheets 삭제 실패, 로컬에서만 삭제됨');
             }
         }
 
