@@ -1,4 +1,57 @@
-<!DOCTYPE html>
+// CSV 내보내기 기능
+        function exportToCSV() {
+            if (records.length === 0) {
+                alert('내보낼 데이터가 없습니다.');
+                return;
+            }
+            
+            const headers = ['날짜', '시간', '팀', '이름', '거리(km)'];
+            const csvContent = [
+                headers.join(','),
+                ...records.map(record => [
+                    record.date,
+                    record.time,
+                    record.team,
+                    record.name,
+                    record.distance
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `러닝기록_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '')}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Google Sheets 열기
+        function openGoogleSheets() {
+            if (!GOOGLE_SHEETS_CONFIG.SHEET_ID || GOOGLE_SHEETS_CONFIG.SHEET_ID === 'YOUR_GOOGLE_SHEETS_ID_HERE') {
+                alert('Google Sheets가 아직 설정되지 않았습니다.');
+                return;
+            }
+            
+            const sheetsUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_CONFIG.SHEET_ID}/edit`;
+            window.open(sheetsUrl, '_blank');
+        }        <!-- 데이터 관리 섹션 -->
+        <div class="input-section">
+            <h2 class="input-title">📊 데이터 관리</h2>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button onclick="loadDataFromSheets()" class="add-btn" style="background: #2ed573;">
+                    🔄 데이터 새로고침
+                </button>
+                <button onclick="exportToCSV()" class="add-btn" style="background: #3742fa;">
+                    📥 CSV 다운로드
+                </button>
+                <button onclick="openGoogleSheets()" class="add-btn" style="background: #26d466;">
+                    📊 Google Sheets 열기
+                </button>
+            </div>
+        </div><!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -532,6 +585,14 @@
     </div>
 
     <script>
+        // Google Sheets 설정
+        const GOOGLE_SHEETS_CONFIG = {
+            // Google Apps Script Web App URL
+            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzJCP0Mh2CLYubRdbGFcI5JbR8xnuxG53tLSMsx9bTJDY5L5GPbcUziFDVXCOGI2VrY/exec',
+            // Google Sheets ID
+            SHEET_ID: '1o2mVIWLTF0wsInZdufL0dWNEvae7lkWRTmK3o1rdQ8w'
+        };
+
         // 크루원 및 팀 설정 (실제 크루원 데이터)
         const crewMembers = {
             // 우유팀 멤버들
@@ -573,18 +634,189 @@
             "후다닭": "포도"
         };
         
-        // 데이터 저장소 (JavaScript 변수 사용)
+        // 데이터 저장소
         let records = [];
         let dailyData = {};
+        let isLoading = false;
         
         // 차트 인스턴스
         let teamChart = null;
         let dailyChart = null;
 
-        // 페이지 로드 시 크루원 리스트 생성
+        // 페이지 로드 시 실행
         window.addEventListener('load', function() {
             updateMemberSelect();
+            loadDataFromSheets();
         });
+
+        // Google Sheets에서 데이터 로드
+        async function loadDataFromSheets() {
+            if (!GOOGLE_SHEETS_CONFIG.WEB_APP_URL || GOOGLE_SHEETS_CONFIG.WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                console.log('Google Sheets가 아직 설정되지 않았습니다.');
+                showSetupInstructions();
+                return;
+            }
+
+            try {
+                isLoading = true;
+                showLoadingMessage('데이터를 불러오는 중...');
+
+                const response = await fetch(GOOGLE_SHEETS_CONFIG.WEB_APP_URL + '?action=read');
+                const data = await response.json();
+                
+                if (data.success && data.records) {
+                    records = data.records.map(record => ({
+                        ...record,
+                        id: record.id || Date.now() + Math.random()
+                    }));
+                    updateDisplay();
+                    hideLoadingMessage();
+                    console.log('데이터를 성공적으로 불러왔습니다:', records.length + '개 기록');
+                }
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+                hideLoadingMessage();
+                showErrorMessage('데이터를 불러오지 못했습니다. Google Sheets 설정을 확인해주세요.');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Google Sheets에 데이터 저장
+        async function saveDataToSheets(record) {
+            if (!GOOGLE_SHEETS_CONFIG.WEB_APP_URL || GOOGLE_SHEETS_CONFIG.WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                console.log('Google Sheets가 설정되지 않아 로컬에만 저장됩니다.');
+                return false;
+            }
+
+            try {
+                showLoadingMessage('저장 중...');
+                
+                const response = await fetch(GOOGLE_SHEETS_CONFIG.WEB_APP_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'create',
+                        record: record
+                    })
+                });
+
+                const result = await response.json();
+                hideLoadingMessage();
+                
+                if (result.success) {
+                    console.log('Google Sheets에 저장 완료');
+                    return true;
+                } else {
+                    throw new Error(result.error || '저장 실패');
+                }
+            } catch (error) {
+                console.error('저장 실패:', error);
+                hideLoadingMessage();
+                showErrorMessage('저장에 실패했습니다: ' + error.message);
+                return false;
+            }
+        }
+
+        // Google Sheets에서 기록 삭제
+        async function deleteDataFromSheets(recordId) {
+            if (!GOOGLE_SHEETS_CONFIG.WEB_APP_URL || GOOGLE_SHEETS_CONFIG.WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                return false;
+            }
+
+            try {
+                showLoadingMessage('삭제 중...');
+                
+                const response = await fetch(GOOGLE_SHEETS_CONFIG.WEB_APP_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        id: recordId
+                    })
+                });
+
+                const result = await response.json();
+                hideLoadingMessage();
+                
+                return result.success;
+            } catch (error) {
+                console.error('삭제 실패:', error);
+                hideLoadingMessage();
+                return false;
+            }
+        }
+
+        // 로딩 메시지 표시
+        function showLoadingMessage(message) {
+            let loadingDiv = document.getElementById('loadingMessage');
+            if (!loadingDiv) {
+                loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loadingMessage';
+                loadingDiv.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 1rem 2rem;
+                    border-radius: 8px;
+                    z-index: 10000;
+                    font-weight: bold;
+                `;
+                document.body.appendChild(loadingDiv);
+            }
+            loadingDiv.textContent = message;
+            loadingDiv.style.display = 'block';
+        }
+
+        // 로딩 메시지 숨기기
+        function hideLoadingMessage() {
+            const loadingDiv = document.getElementById('loadingMessage');
+            if (loadingDiv) {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // 에러 메시지 표시
+        function showErrorMessage(message) {
+            alert('⚠️ ' + message);
+        }
+
+        // 설정 안내 표시
+        function showSetupInstructions() {
+            const setupDiv = document.createElement('div');
+            setupDiv.style.cssText = `
+                background: #ffe6e6;
+                border: 2px solid #ff6b6b;
+                border-radius: 8px;
+                padding: 1rem;
+                margin: 1rem 0;
+                color: #333;
+            `;
+            setupDiv.innerHTML = `
+                <h3>🔧 Google Sheets 연동 설정이 필요합니다</h3>
+                <p>현재는 브라우저에만 데이터가 저장됩니다. 영구적인 데이터 저장을 위해 Google Sheets 설정을 완료해주세요.</p>
+                <details>
+                    <summary style="cursor: pointer; font-weight: bold;">📋 설정 방법 보기</summary>
+                    <ol style="margin-top: 0.5rem;">
+                        <li>Google Sheets에서 새 스프레드시트 생성</li>
+                        <li>Apps Script 설정 (제공된 스크립트 코드 사용)</li>
+                        <li>Web App으로 배포</li>
+                        <li>URL을 코드에 입력</li>
+                    </ol>
+                    <p><strong>자세한 설정 방법은 개발자에게 문의하세요.</strong></p>
+                </details>
+            `;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(setupDiv, container.firstChild);
+        }
 
         // 크루원 선택 드롭다운 업데이트
         function updateMemberSelect() {
@@ -639,8 +871,10 @@
         }
 
         // 폼 제출 처리
-        document.getElementById('recordForm').addEventListener('submit', function(e) {
+        document.getElementById('recordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            if (isLoading) return;
             
             const selectedMember = document.getElementById('memberSelect').value;
             const distance = parseFloat(document.getElementById('distance').value);
@@ -657,33 +891,54 @@
 
             const team = crewMembers[selectedMember];
             
-            // 기록 추가
+            // 기록 생성
             const record = {
                 id: Date.now(),
                 team: team,
                 name: selectedMember,
                 distance: distance,
                 date: new Date().toLocaleDateString('ko-KR'),
-                time: new Date().toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'})
+                time: new Date().toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'}),
+                timestamp: new Date().toISOString()
             };
 
+            // 로컬에 먼저 추가
             records.push(record);
+            updateDisplay();
             
             // 폼 초기화
             document.getElementById('recordForm').reset();
-            onMemberChange(); // 팀 표시 초기화
+            onMemberChange();
             
-            // UI 업데이트
-            updateDisplay();
+            // Google Sheets에 저장 시도
+            const saveSuccess = await saveDataToSheets(record);
             
-            alert(`${selectedMember}님의 ${distance}km 기록이 추가되었습니다!`);
+            if (saveSuccess) {
+                alert(`✅ ${selectedMember}님의 ${distance}km 기록이 Google Sheets에 저장되었습니다!`);
+            } else {
+                alert(`⚠️ ${selectedMember}님의 ${distance}km 기록이 추가되었지만, Google Sheets 저장에 실패했습니다. 로컬에만 저장됩니다.`);
+            }
         });
 
         // 기록 삭제
-        function deleteRecord(id) {
-            if (confirm('이 기록을 삭제하시겠습니까?')) {
-                records = records.filter(record => record.id !== id);
-                updateDisplay();
+        async function deleteRecord(id) {
+            if (!confirm('이 기록을 삭제하시겠습니까?')) return;
+            
+            // 로컬에서 먼저 삭제
+            const recordIndex = records.findIndex(r => r.id === id);
+            if (recordIndex === -1) return;
+            
+            const deletedRecord = records[recordIndex];
+            records.splice(recordIndex, 1);
+            updateDisplay();
+            
+            // Google Sheets에서 삭제 시도
+            const deleteSuccess = await deleteDataFromSheets(id);
+            
+            if (deleteSuccess) {
+                alert('✅ 기록이 Google Sheets에서도 삭제되었습니다.');
+            } else {
+                alert('⚠️ 로컬에서는 삭제되었지만, Google Sheets에서 삭제에 실패했습니다.');
             }
         }
 
