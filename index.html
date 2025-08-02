@@ -59,7 +59,49 @@
             text-align: center;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
         }
+
+        .team-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid;
+            flex-shrink: 0;
+        }
+
+        .team-a .team-image {
+            border-color: #FF6B35;
+        }
+
+        .team-b .team-image {
+            border-color: #4ECDC4;
+        }
+
+        .team-content {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* 배경 이미지 옵션 (주석 해제하여 사용) */
+        /*
+        .team-a {
+            background: linear-gradient(rgba(255, 107, 53, 0.9), rgba(255, 107, 53, 0.9)), url('우유팀_이미지_URL');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .team-b {
+            background: linear-gradient(rgba(78, 205, 196, 0.9), rgba(78, 205, 196, 0.9)), url('포도팀_이미지_URL');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+        */
 
         .team-a {
             border-top: 5px solid #FF6B35;
@@ -98,6 +140,8 @@
         .team-members {
             text-align: left;
             margin-top: 1.5rem;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         .member-item {
@@ -368,6 +412,16 @@
             .team-total {
                 font-size: 2rem;
             }
+
+            .team-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .team-image {
+                width: 80px;
+                height: 80px;
+            }
         }
 
         .winner-badge {
@@ -405,21 +459,31 @@
         <div class="dashboard">
             <div class="team-card team-a">
                 <div class="winner-badge" id="winnerA">🏆 1위</div>
-                <div class="team-name">🥛 우유팀</div>
-                <div class="team-total" id="teamATotal">0</div>
-                <div class="team-unit">km</div>
-                <div class="team-members" id="teamAMembers">
-                    <!-- 멤버별 기록이 여기에 표시됩니다 -->
+                <!-- 우유팀 이미지 -->
+                <img src="https://github.com/rundatesj/Runday_2508/raw/main/%EC%9A%B0%EC%9C%A0.jpg" 
+                     alt="우유팀" class="team-image" id="milkTeamImage">
+                <div class="team-content">
+                    <div class="team-name">🥛 우유팀</div>
+                    <div class="team-total" id="teamATotal">0</div>
+                    <div class="team-unit">km</div>
+                    <div class="team-members" id="teamAMembers">
+                        <!-- 멤버별 기록이 여기에 표시됩니다 -->
+                    </div>
                 </div>
             </div>
 
             <div class="team-card team-b">
                 <div class="winner-badge" id="winnerB">🏆 1위</div>
-                <div class="team-name">🍇 포도팀</div>
-                <div class="team-total" id="teamBTotal">0</div>
-                <div class="team-unit">km</div>
-                <div class="team-members" id="teamBMembers">
-                    <!-- 멤버별 기록이 여기에 표시됩니다 -->
+                <!-- 포도팀 이미지 -->
+                <img src="https://github.com/rundatesj/Runday_2508/raw/main/%ED%8F%AC%EB%8F%84.jpg" 
+                     alt="포도팀" class="team-image" id="grapeTeamImage">
+                <div class="team-content">
+                    <div class="team-name">🍇 포도팀</div>
+                    <div class="team-total" id="teamBTotal">0</div>
+                    <div class="team-unit">km</div>
+                    <div class="team-members" id="teamBMembers">
+                        <!-- 멤버별 기록이 여기에 표시됩니다 -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -482,7 +546,6 @@
             "먕먐": "우유",
             "물냉명": "우유",
             "봉무동러너": "우유",
-            "세동이": "우유",
             "삼남매맘": "우유",
             "상우쌍우": "우유",
             "신욱재": "우유",
@@ -496,6 +559,7 @@
             "뭉공주": "포도",
             "바다": "포도",
             "삐약비약": "포도",
+            "세동이": "포도",
             "수다맘": "포도",
             "술우": "포도",
             "얼쑤야": "포도",
