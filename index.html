@@ -1,58 +1,4 @@
-// CSV 내보내기 기능
-        function exportToCSV() {
-            if (records.length === 0) {
-                alert('내보낼 데이터가 없습니다.');
-                return;
-            }
-            
-            const headers = ['날짜', '시간', '팀', '이름', '거리(km)'];
-            const csvContent = [
-                headers.join(','),
-                ...records.map(record => [
-                    record.date || '',
-                    record.time || '',
-                    record.team || '',
-                    record.name || '',
-                    record.distance || 0
-                ].join(','))
-            ].join('\n');
-            
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            const fileName = '러닝기록_' + new Date().toLocaleDateString('ko-KR').replace(/\./g, '') + '.csv';
-            link.setAttribute('download', fileName);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Google Sheets 열기
-        function openGoogleSheets() {
-            if (!GOOGLE_SHEETS_CONFIG.SHEET_ID) {
-                alert('Google Sheets가 아직 설정되지 않았습니다.');
-                return;
-            }
-            
-            const sheetsUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEETS_CONFIG.SHEET_ID}/edit`;
-            window.open(sheetsUrl, '_blank');
-        }        <!-- 데이터 관리 섹션 -->
-        <div class="input-section">
-            <h2 class="input-title">📊 데이터 관리</h2>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <button onclick="loadDataFromSheets()" class="add-btn" style="background: #2ed573;">
-                    🔄 데이터 새로고침
-                </button>
-                <button onclick="exportToCSV()" class="add-btn" style="background: #3742fa;">
-                    📥 CSV 다운로드
-                </button>
-                <button onclick="openGoogleSheets()" class="add-btn" style="background: #26d466;">
-                    📊 Google Sheets 열기
-                </button>
-            </div>
-        </div><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -118,6 +64,14 @@
             gap: 1.5rem;
         }
 
+        .team-a {
+            border-top: 5px solid #FF6B35;
+        }
+
+        .team-b {
+            border-top: 5px solid #4ECDC4;
+        }
+
         .team-image {
             width: 120px;
             height: 120px;
@@ -138,31 +92,6 @@
         .team-content {
             flex: 1;
             text-align: center;
-        }
-
-        /* 배경 이미지 옵션 (주석 해제하여 사용) */
-        /*
-        .team-a {
-            background: linear-gradient(rgba(255, 107, 53, 0.9), rgba(255, 107, 53, 0.9)), url('우유팀_이미지_URL');
-            background-size: cover;
-            background-position: center;
-            color: white;
-        }
-
-        .team-b {
-            background: linear-gradient(rgba(78, 205, 196, 0.9), rgba(78, 205, 196, 0.9)), url('포도팀_이미지_URL');
-            background-size: cover;
-            background-position: center;
-            color: white;
-        }
-        */
-
-        .team-a {
-            border-top: 5px solid #FF6B35;
-        }
-
-        .team-b {
-            border-top: 5px solid #4ECDC4;
         }
 
         .team-name {
@@ -262,6 +191,15 @@
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        .team-display {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #999;
+            font-weight: normal;
         }
 
         .add-btn {
@@ -389,57 +327,27 @@
             background: #2f3542;
         }
 
-        .history-item.editing {
-            background-color: #f1f2f6;
-            border: 2px solid #3742fa;
-        }
-
-                        .edit-form {
+        .winner-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: gold;
+            color: #333;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 700;
             display: none;
-            grid-template-columns: 2fr 1fr auto auto;
-            gap: 0.5rem;
-            align-items: center;
-            margin-top: 0.5rem;
         }
 
-        .edit-form.show {
-            display: grid;
+        .winner-badge.show {
+            display: block;
+            animation: bounce 1s ease infinite alternate;
         }
 
-        .edit-form input,
-        .edit-form select {
-            padding: 0.4rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-
-        .save-btn {
-            background: #2ed573;
-            color: white;
-            border: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-
-        .save-btn:hover {
-            background: #26d466;
-        }
-
-        .cancel-btn {
-            background: #747d8c;
-            color: white;
-            border: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-
-        .cancel-btn:hover {
-            background: #57606f;
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
         }
 
         @media (max-width: 768px) {
@@ -477,29 +385,6 @@
                 height: 80px;
             }
         }
-
-        .winner-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: gold;
-            color: #333;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: none;
-        }
-
-        .winner-badge.show {
-            display: block;
-            animation: bounce 1s ease infinite alternate;
-        }
-
-        @keyframes bounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-5px); }
-        }
     </style>
 </head>
 <body>
@@ -513,30 +398,28 @@
         <div class="dashboard">
             <div class="team-card team-a">
                 <div class="winner-badge" id="winnerA">🏆 1위</div>
-                <!-- 우유팀 이미지 -->
                 <img src="https://github.com/rundatesj/Runday_2508/raw/main/%EC%9A%B0%EC%9C%A0.jpg" 
-                     alt="우유팀" class="team-image" id="milkTeamImage">
+                     alt="우유팀" class="team-image">
                 <div class="team-content">
                     <div class="team-name">🥛 우유팀</div>
                     <div class="team-total" id="teamATotal">0</div>
                     <div class="team-unit">km</div>
                     <div class="team-members" id="teamAMembers">
-                        <!-- 멤버별 기록이 여기에 표시됩니다 -->
+                        <div class="member-item"><span>아직 기록이 없습니다</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="team-card team-b">
                 <div class="winner-badge" id="winnerB">🏆 1위</div>
-                <!-- 포도팀 이미지 -->
                 <img src="https://github.com/rundatesj/Runday_2508/raw/main/%ED%8F%AC%EB%8F%84.jpg" 
-                     alt="포도팀" class="team-image" id="grapeTeamImage">
+                     alt="포도팀" class="team-image">
                 <div class="team-content">
                     <div class="team-name">🍇 포도팀</div>
                     <div class="team-total" id="teamBTotal">0</div>
                     <div class="team-unit">km</div>
                     <div class="team-members" id="teamBMembers">
-                        <!-- 멤버별 기록이 여기에 표시됩니다 -->
+                        <div class="member-item"><span>아직 기록이 없습니다</span></div>
                     </div>
                 </div>
             </div>
@@ -548,13 +431,13 @@
             <form class="input-form" id="recordForm">
                 <div class="form-group">
                     <label for="memberSelect">크루원 선택</label>
-                    <select id="memberSelect" onchange="onMemberChange()" required>
+                    <select id="memberSelect" required>
                         <option value="">크루원을 선택하세요</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="teamDisplay">소속팀</label>
-                    <div id="teamDisplay" style="padding: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px; background: #f8f9fa; color: #999;">팀 정보 없음</div>
+                    <label>소속팀</label>
+                    <div id="teamDisplay" class="team-display">팀 정보 없음</div>
                 </div>
                 <div class="form-group">
                     <label for="distance">거리 (km)</label>
@@ -576,43 +459,18 @@
             </div>
         </div>
 
-        <!-- 데이터 관리 섹션 -->
-        <div class="input-section">
-            <h2 class="input-title">📊 데이터 관리</h2>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <button onclick="loadDataFromSheets()" class="add-btn" style="background: #2ed573;">
-                    🔄 데이터 새로고침
-                </button>
-                <button onclick="exportToCSV()" class="add-btn" style="background: #3742fa;">
-                    📥 CSV 다운로드
-                </button>
-                <button onclick="openGoogleSheets()" class="add-btn" style="background: #26d466;">
-                    📊 Google Sheets 열기
-                </button>
-            </div>
-        </div>
-
         <!-- 기록 히스토리 -->
         <div class="history-section">
             <h2 class="history-title">최근 기록</h2>
             <div class="history-list" id="historyList">
-                <!-- 기록 히스토리가 여기에 표시됩니다 -->
+                <div class="history-item"><span>아직 기록이 없습니다</span></div>
             </div>
         </div>
     </div>
 
     <script>
-        // Google Sheets 설정
-        const GOOGLE_SHEETS_CONFIG = {
-            // Google Apps Script Web App URL
-            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzJCP0Mh2CLYubRdbGFcI5JbR8xnuxG53tLSMsx9bTJDY5L5GPbcUziFDVXCOGI2VrY/exec',
-            // Google Sheets ID
-            SHEET_ID: '1o2mVIWLTF0wsInZdufL0dWNEvae7lkWRTmK3o1rdQ8w'
-        };
-
-        // 크루원 및 팀 설정 (실제 크루원 데이터)
+        // 크루원 및 팀 설정
         const crewMembers = {
-            // 우유팀 멤버들
             "goinggoing": "우유",
             "JS Jeon": "우유",
             "NJ_Run": "우유",
@@ -629,8 +487,6 @@
             "신욱재": "우유",
             "우유키": "우유",
             "후니": "우유",
-            
-            // 포도팀 멤버들
             "권초게": "포도",
             "라꾸라꾸조깅": "포도",
             "마이세트": "포도",
@@ -653,238 +509,52 @@
         
         // 데이터 저장소
         let records = [];
-        let dailyData = {};
-        let isLoading = false;
-        
-        // 차트 인스턴스
         let teamChart = null;
         let dailyChart = null;
 
         // 페이지 로드 시 실행
-        window.addEventListener('load', function() {
+        document.addEventListener('DOMContentLoaded', function() {
             updateMemberSelect();
-            loadDataFromSheets();
+            updateDisplay();
         });
-
-        // Google Sheets에서 데이터 로드
-        async function loadDataFromSheets() {
-            if (!GOOGLE_SHEETS_CONFIG.WEB_APP_URL) {
-                console.log('Google Sheets가 아직 설정되지 않았습니다.');
-                showSetupInstructions();
-                return;
-            }
-
-            try {
-                isLoading = true;
-                showLoadingMessage('데이터를 불러오는 중...');
-
-                const response = await fetch(GOOGLE_SHEETS_CONFIG.WEB_APP_URL + '?action=read');
-                const data = await response.json();
-                
-                if (data.success && data.records) {
-                    records = data.records.map(record => ({
-                        ...record,
-                        id: record.ID || record.id || Date.now() + Math.random(),
-                        team: record['팀'] || record.team,
-                        name: record['이름'] || record.name,
-                        distance: parseFloat(record['거리'] || record.distance || 0),
-                        date: record['날짜'] || record.date,
-                        time: record['시간'] || record.time,
-                        timestamp: record['타임스탬프'] || record.timestamp
-                    }));
-                    updateDisplay();
-                    hideLoadingMessage();
-                    console.log('데이터를 성공적으로 불러왔습니다:', records.length + '개 기록');
-                } else {
-                    hideLoadingMessage();
-                    console.log('저장된 데이터가 없습니다.');
-                }
-            } catch (error) {
-                console.error('데이터 로드 실패:', error);
-                hideLoadingMessage();
-                showErrorMessage('데이터를 불러오지 못했습니다. Google Sheets 설정을 확인해주세요.');
-            } finally {
-                isLoading = false;
-            }
-        }
-
-        // Google Sheets에 데이터 저장
-        async function saveDataToSheets(record) {
-            if (!GOOGLE_SHEETS_CONFIG.WEB_APP_URL) {
-                console.log('Google Sheets가 설정되지 않아 로컬에만 저장됩니다.');
-                return false;
-            }
-
-            try {
-                showLoadingMessage('저장 중...');
-                
-                const response = await fetch(GOOGLE_SHEETS_CONFIG.WEB_APP_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'create',
-                        record: record
-                    })
-                });
-
-                const result = await response.json();
-                hideLoadingMessage();
-                
-                if (result.success) {
-                    console.log('Google Sheets에 저장 완료');
-                    return true;
-                } else {
-                    throw new Error(result.error || '저장 실패');
-                }
-            } catch (error) {
-                console.error('저장 실패:', error);
-                hideLoadingMessage();
-                showErrorMessage('저장에 실패했습니다: ' + error.message);
-                return false;
-            }
-        }
-
-        // Google Sheets에서 기록 삭제
-        async function deleteDataFromSheets(recordId) {
-            if (!GOOGLE_SHEETS_CONFIG.WEB_APP_URL) {
-                return false;
-            }
-
-            try {
-                showLoadingMessage('삭제 중...');
-                
-                const response = await fetch(GOOGLE_SHEETS_CONFIG.WEB_APP_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'delete',
-                        id: recordId
-                    })
-                });
-
-                const result = await response.json();
-                hideLoadingMessage();
-                
-                return result.success;
-            } catch (error) {
-                console.error('삭제 실패:', error);
-                hideLoadingMessage();
-                return false;
-            }
-        }
-
-        // 로딩 메시지 표시
-        function showLoadingMessage(message) {
-            let loadingDiv = document.getElementById('loadingMessage');
-            if (!loadingDiv) {
-                loadingDiv = document.createElement('div');
-                loadingDiv.id = 'loadingMessage';
-                loadingDiv.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: rgba(0,0,0,0.8);
-                    color: white;
-                    padding: 1rem 2rem;
-                    border-radius: 8px;
-                    z-index: 10000;
-                    font-weight: bold;
-                `;
-                document.body.appendChild(loadingDiv);
-            }
-            loadingDiv.textContent = message;
-            loadingDiv.style.display = 'block';
-        }
-
-        // 로딩 메시지 숨기기
-        function hideLoadingMessage() {
-            const loadingDiv = document.getElementById('loadingMessage');
-            if (loadingDiv) {
-                loadingDiv.style.display = 'none';
-            }
-        }
-
-        // 에러 메시지 표시
-        function showErrorMessage(message) {
-            alert('⚠️ ' + message);
-        }
-
-        // 설정 안내 표시
-        function showSetupInstructions() {
-            const setupDiv = document.createElement('div');
-            setupDiv.style.cssText = `
-                background: #ffe6e6;
-                border: 2px solid #ff6b6b;
-                border-radius: 8px;
-                padding: 1rem;
-                margin: 1rem 0;
-                color: #333;
-            `;
-            setupDiv.innerHTML = `
-                <h3>🔧 Google Sheets 연동 설정이 필요합니다</h3>
-                <p>현재는 브라우저에만 데이터가 저장됩니다. 영구적인 데이터 저장을 위해 Google Sheets 설정을 완료해주세요.</p>
-                <details>
-                    <summary style="cursor: pointer; font-weight: bold;">📋 설정 방법 보기</summary>
-                    <ol style="margin-top: 0.5rem;">
-                        <li>Google Sheets에서 새 스프레드시트 생성</li>
-                        <li>Apps Script 설정 (제공된 스크립트 코드 사용)</li>
-                        <li>Web App으로 배포</li>
-                        <li>URL을 코드에 입력</li>
-                    </ol>
-                    <p><strong>자세한 설정 방법은 개발자에게 문의하세요.</strong></p>
-                </details>
-            `;
-            
-            const container = document.querySelector('.container');
-            if (container) {
-                container.insertBefore(setupDiv, container.firstChild);
-            }
-        }
 
         // 크루원 선택 드롭다운 업데이트
         function updateMemberSelect() {
             const memberSelect = document.getElementById('memberSelect');
             memberSelect.innerHTML = '<option value="">크루원을 선택하세요</option>';
             
-            // 우유팀 멤버들
             const milkTeamMembers = Object.keys(crewMembers).filter(member => crewMembers[member] === '우유');
+            const grapeTeamMembers = Object.keys(crewMembers).filter(member => crewMembers[member] === '포도');
+            
             if (milkTeamMembers.length > 0) {
-                const milkTeamGroup = document.createElement('optgroup');
-                milkTeamGroup.label = '🥛 우유팀';
+                const milkGroup = document.createElement('optgroup');
+                milkGroup.label = '🥛 우유팀';
                 milkTeamMembers.forEach(member => {
                     const option = document.createElement('option');
                     option.value = member;
                     option.textContent = member;
-                    milkTeamGroup.appendChild(option);
+                    milkGroup.appendChild(option);
                 });
-                memberSelect.appendChild(milkTeamGroup);
+                memberSelect.appendChild(milkGroup);
             }
             
-            // 포도팀 멤버들
-            const grapeTeamMembers = Object.keys(crewMembers).filter(member => crewMembers[member] === '포도');
             if (grapeTeamMembers.length > 0) {
-                const grapeTeamGroup = document.createElement('optgroup');
-                grapeTeamGroup.label = '🍇 포도팀';
+                const grapeGroup = document.createElement('optgroup');
+                grapeGroup.label = '🍇 포도팀';
                 grapeTeamMembers.forEach(member => {
                     const option = document.createElement('option');
                     option.value = member;
                     option.textContent = member;
-                    grapeTeamGroup.appendChild(option);
+                    grapeGroup.appendChild(option);
                 });
-                memberSelect.appendChild(grapeTeamGroup);
+                memberSelect.appendChild(grapeGroup);
             }
         }
 
-        // 크루원 선택 시 팀 자동 설정
-        function onMemberChange() {
-            const memberSelect = document.getElementById('memberSelect');
+        // 크루원 선택 시 팀 표시
+        document.getElementById('memberSelect').addEventListener('change', function() {
+            const selectedMember = this.value;
             const teamDisplay = document.getElementById('teamDisplay');
-            const selectedMember = memberSelect.value;
             
             if (selectedMember && crewMembers[selectedMember]) {
                 const team = crewMembers[selectedMember];
@@ -896,13 +566,11 @@
                 teamDisplay.style.color = '#999';
                 teamDisplay.style.fontWeight = 'normal';
             }
-        }
+        });
 
         // 폼 제출 처리
-        document.getElementById('recordForm').addEventListener('submit', async function(e) {
+        document.getElementById('recordForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            if (isLoading) return;
             
             const selectedMember = document.getElementById('memberSelect').value;
             const distance = parseFloat(document.getElementById('distance').value);
@@ -918,122 +586,35 @@
             }
 
             const team = crewMembers[selectedMember];
+            const now = new Date();
             
-            // 기록 생성
             const record = {
                 id: Date.now(),
                 team: team,
                 name: selectedMember,
                 distance: distance,
-                date: new Date().toLocaleDateString('ko-KR'),
-                time: new Date().toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'}),
-                timestamp: new Date().toISOString()
+                date: now.toLocaleDateString('ko-KR'),
+                time: now.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'})
             };
 
-            // 로컬에 먼저 추가
             records.push(record);
             updateDisplay();
             
             // 폼 초기화
-            document.getElementById('recordForm').reset();
-            onMemberChange();
+            this.reset();
+            document.getElementById('teamDisplay').textContent = '팀 정보 없음';
+            document.getElementById('teamDisplay').style.color = '#999';
+            document.getElementById('teamDisplay').style.fontWeight = 'normal';
             
-            // Google Sheets에 저장 시도
-            const saveSuccess = await saveDataToSheets(record);
-            
-            if (saveSuccess) {
-                alert(`✅ ${selectedMember}님의 ${distance}km 기록이 Google Sheets에 저장되었습니다!`);
-            } else {
-                alert(`⚠️ ${selectedMember}님의 ${distance}km 기록이 추가되었지만, Google Sheets 저장에 실패했습니다. 로컬에만 저장됩니다.`);
-            }
+            alert('기록이 추가되었습니다!');
         });
 
         // 기록 삭제
-        async function deleteRecord(id) {
-            if (!confirm('이 기록을 삭제하시겠습니까?')) return;
-            
-            // 로컬에서 먼저 삭제
-            const recordIndex = records.findIndex(r => r.id === id);
-            if (recordIndex === -1) return;
-            
-            const deletedRecord = records[recordIndex];
-            records.splice(recordIndex, 1);
-            updateDisplay();
-            
-            // Google Sheets에서 삭제 시도
-            const deleteSuccess = await deleteDataFromSheets(id);
-            
-            if (deleteSuccess) {
-                alert('✅ 기록이 Google Sheets에서도 삭제되었습니다.');
-            } else {
-                alert('⚠️ 로컬에서는 삭제되었지만, Google Sheets에서 삭제에 실패했습니다.');
-            }
-        }
-
-        // 기록 수정 모드 진입
-        function editRecord(id) {
-            // 다른 편집 중인 항목들 취소
-            cancelAllEdits();
-            
-            const record = records.find(r => r.id === id);
-            if (!record) return;
-            
-            const historyItem = document.querySelector(`[data-record-id="${id}"]`);
-            if (!historyItem) return;
-            
-            historyItem.classList.add('editing');
-            const editForm = historyItem.querySelector('.edit-form');
-            editForm.classList.add('show');
-            
-            // 현재 값들을 폼에 설정
-            editForm.querySelector('.edit-team').value = record.team;
-            editForm.querySelector('.edit-name').value = record.name;
-            editForm.querySelector('.edit-distance').value = record.distance;
-        }
-
-        // 기록 수정 저장
-        function saveRecord(id) {
-            const historyItem = document.querySelector(`[data-record-id="${id}"]`);
-            const editForm = historyItem.querySelector('.edit-form');
-            
-            const selectedMember = editForm.querySelector('.edit-member').value;
-            const newDistance = parseFloat(editForm.querySelector('.edit-distance').value);
-            
-            if (!selectedMember || !newDistance || newDistance <= 0) {
-                alert('모든 필드를 올바르게 입력해주세요!');
-                return;
-            }
-            
-            // 기록 업데이트
-            const recordIndex = records.findIndex(r => r.id === id);
-            if (recordIndex !== -1) {
-                records[recordIndex].team = crewMembers[selectedMember];
-                records[recordIndex].name = selectedMember;
-                records[recordIndex].distance = newDistance;
-                
+        function deleteRecord(id) {
+            if (confirm('이 기록을 삭제하시겠습니까?')) {
+                records = records.filter(record => record.id !== id);
                 updateDisplay();
-                alert('기록이 수정되었습니다!');
             }
-        }
-
-        // 기록 수정 취소
-        function cancelEdit(id) {
-            const historyItem = document.querySelector(`[data-record-id="${id}"]`);
-            if (historyItem) {
-                historyItem.classList.remove('editing');
-                const editForm = historyItem.querySelector('.edit-form');
-                editForm.classList.remove('show');
-            }
-        }
-
-        // 모든 편집 취소
-        function cancelAllEdits() {
-            document.querySelectorAll('.history-item.editing').forEach(item => {
-                item.classList.remove('editing');
-            });
-            document.querySelectorAll('.edit-form.show').forEach(form => {
-                form.classList.remove('show');
-            });
         }
 
         // 화면 업데이트
@@ -1046,41 +627,40 @@
 
         // 팀 총합 업데이트
         function updateTeamTotals() {
-            const milkTeamTotal = records.filter(r => r.team === '우유').reduce((sum, r) => sum + r.distance, 0);
-            const grapeTeamTotal = records.filter(r => r.team === '포도').reduce((sum, r) => sum + r.distance, 0);
+            const milkTotal = records.filter(r => r.team === '우유').reduce((sum, r) => sum + r.distance, 0);
+            const grapeTotal = records.filter(r => r.team === '포도').reduce((sum, r) => sum + r.distance, 0);
             
-            document.getElementById('teamATotal').textContent = milkTeamTotal.toFixed(1);
-            document.getElementById('teamBTotal').textContent = grapeTeamTotal.toFixed(1);
+            document.getElementById('teamATotal').textContent = milkTotal.toFixed(1);
+            document.getElementById('teamBTotal').textContent = grapeTotal.toFixed(1);
             
-            // 승리 배지 표시
             const winnerA = document.getElementById('winnerA');
             const winnerB = document.getElementById('winnerB');
             
             winnerA.classList.remove('show');
             winnerB.classList.remove('show');
             
-            if (milkTeamTotal > grapeTeamTotal && milkTeamTotal > 0) {
+            if (milkTotal > grapeTotal && milkTotal > 0) {
                 winnerA.classList.add('show');
-            } else if (grapeTeamTotal > milkTeamTotal && grapeTeamTotal > 0) {
+            } else if (grapeTotal > milkTotal && grapeTotal > 0) {
                 winnerB.classList.add('show');
             }
         }
 
         // 멤버별 리스트 업데이트
         function updateMemberLists() {
-            const milkTeamMembers = {};
-            const grapeTeamMembers = {};
+            const milkMembers = {};
+            const grapeMembers = {};
             
             records.forEach(record => {
                 if (record.team === '우유') {
-                    milkTeamMembers[record.name] = (milkTeamMembers[record.name] || 0) + record.distance;
+                    milkMembers[record.name] = (milkMembers[record.name] || 0) + record.distance;
                 } else if (record.team === '포도') {
-                    grapeTeamMembers[record.name] = (grapeTeamMembers[record.name] || 0) + record.distance;
+                    grapeMembers[record.name] = (grapeMembers[record.name] || 0) + record.distance;
                 }
             });
             
-            updateMemberList('teamAMembers', milkTeamMembers);
-            updateMemberList('teamBMembers', grapeTeamMembers);
+            updateMemberList('teamAMembers', milkMembers);
+            updateMemberList('teamBMembers', grapeMembers);
         }
 
         function updateMemberList(elementId, members) {
@@ -1088,6 +668,11 @@
             container.innerHTML = '';
             
             const sortedMembers = Object.entries(members).sort((a, b) => b[1] - a[1]);
+            
+            if (sortedMembers.length === 0) {
+                container.innerHTML = '<div class="member-item"><span>아직 기록이 없습니다</span></div>';
+                return;
+            }
             
             sortedMembers.forEach(([name, distance]) => {
                 const memberItem = document.createElement('div');
@@ -1098,10 +683,6 @@
                 `;
                 container.appendChild(memberItem);
             });
-            
-            if (sortedMembers.length === 0) {
-                container.innerHTML = '<div class="member-item"><span>아직 기록이 없습니다</span></div>';
-            }
         }
 
         // 차트 업데이트
@@ -1111,8 +692,8 @@
         }
 
         function updateTeamChart() {
-            const milkTeamTotal = records.filter(r => r.team === '우유').reduce((sum, r) => sum + r.distance, 0);
-            const grapeTeamTotal = records.filter(r => r.team === '포도').reduce((sum, r) => sum + r.distance, 0);
+            const milkTotal = records.filter(r => r.team === '우유').reduce((sum, r) => sum + r.distance, 0);
+            const grapeTotal = records.filter(r => r.team === '포도').reduce((sum, r) => sum + r.distance, 0);
             
             const ctx = document.getElementById('teamChart').getContext('2d');
             
@@ -1125,7 +706,7 @@
                 data: {
                     labels: ['🥛 우유팀', '🍇 포도팀'],
                     datasets: [{
-                        data: [milkTeamTotal, grapeTeamTotal],
+                        data: [milkTotal, grapeTotal],
                         backgroundColor: ['#FF6B35', '#4ECDC4'],
                         borderWidth: 0
                     }]
@@ -1143,7 +724,6 @@
         }
 
         function updateDailyChart() {
-            // 일별 데이터 집계
             const dailyStats = {};
             
             records.forEach(record => {
@@ -1154,8 +734,8 @@
             });
             
             const dates = Object.keys(dailyStats).sort();
-            const milkTeamData = dates.map(date => dailyStats[date].우유);
-            const grapeTeamData = dates.map(date => dailyStats[date].포도);
+            const milkData = dates.map(date => dailyStats[date].우유);
+            const grapeData = dates.map(date => dailyStats[date].포도);
             
             const ctx = document.getElementById('dailyChart').getContext('2d');
             
@@ -1169,13 +749,13 @@
                     labels: dates,
                     datasets: [{
                         label: '🥛 우유팀',
-                        data: milkTeamData,
+                        data: milkData,
                         borderColor: '#FF6B35',
                         backgroundColor: 'rgba(255, 107, 53, 0.1)',
                         tension: 0.4
                     }, {
                         label: '🍇 포도팀',
-                        data: grapeTeamData,
+                        data: grapeData,
                         borderColor: '#4ECDC4',
                         backgroundColor: 'rgba(78, 205, 196, 0.1)',
                         tension: 0.4
@@ -1209,43 +789,27 @@
             
             const sortedRecords = [...records].sort((a, b) => b.id - a.id).slice(0, 10);
             
+            if (sortedRecords.length === 0) {
+                historyList.innerHTML = '<div class="history-item"><span>아직 기록이 없습니다</span></div>';
+                return;
+            }
+            
             sortedRecords.forEach(record => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
-                historyItem.setAttribute('data-record-id', record.id);
                 historyItem.innerHTML = `
-                    <div style="flex: 1;">
-                        <div class="history-info">
-                            <div class="history-member">${record.team}팀 - ${record.name}</div>
-                            <div class="history-date">${record.date} ${record.time}</div>
-                        </div>
-                        <div class="edit-form">
-                            <select class="edit-member">
-                                ${Object.keys(crewMembers).map(member => 
-                                    `<option value="${member}" ${record.name === member ? 'selected' : ''}>${member} (${crewMembers[member]}팀)</option>`
-                                ).join('')}
-                            </select>
-                            <input type="number" class="edit-distance" value="${record.distance}" step="0.1" min="0" placeholder="거리">
-                            <button class="save-btn" onclick="saveRecord(${record.id})">저장</button>
-                            <button class="cancel-btn" onclick="cancelEdit(${record.id})">취소</button>
-                        </div>
+                    <div class="history-info">
+                        <div class="history-member">${record.team}팀 - ${record.name}</div>
+                        <div class="history-date">${record.date} ${record.time}</div>
                     </div>
                     <div style="display: flex; align-items: center;">
                         <div class="history-distance">${record.distance}km</div>
-                        <button class="edit-btn" onclick="editRecord(${record.id})">수정</button>
                         <button class="delete-btn" onclick="deleteRecord(${record.id})">삭제</button>
                     </div>
                 `;
                 historyList.appendChild(historyItem);
             });
-            
-            if (sortedRecords.length === 0) {
-                historyList.innerHTML = '<div class="history-item"><span>아직 기록이 없습니다</span></div>';
-            }
         }
-
-        // 초기 화면 설정
-        updateDisplay();
     </script>
 </body>
 </html>
