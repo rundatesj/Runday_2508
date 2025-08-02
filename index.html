@@ -1,34 +1,5 @@
-// CSV 내보내기 기능
-        function exportToCSV() {
-            if (records.length === 0) {
-                alert('내보낼 데이터가 없습니다.');
-                return;
-            }
-            
-            const headers = ['날짜', '시간', '팀', '이름', '거리(km)'];
-            const csvContent = [
-                headers.join(','),
-                ...records.map(record => [
-                    record.date,
-                    record.time,
-                    record.team,
-                    record.name,
-                    record.distance
-                ].join(','))
-            ].join('\n');
-            
-            const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `러닝기록_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '')}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
 
-        // Google Sheets 열기
+   // Google Sheets 열기
         function openGoogleSheets() {
             if (!GOOGLE_SHEETS_CONFIG.SHEET_ID || GOOGLE_SHEETS_CONFIG.SHEET_ID === 'YOUR_GOOGLE_SHEETS_ID_HERE') {
                 alert('Google Sheets가 아직 설정되지 않았습니다.');
