@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>August Run - 팀 마일리지 대결</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-a {
+            border-top: 5px solid #FF6B35;
+        }
+
+        .team-b {
+            border-top: 5px solid #4ECDC4;
+        }
+
+        .team-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .team-a .team-name {
+            color: #FF6B35;
+        }
+
+        .team-b .team-name {
+            color: #4ECDC4;
+        }
+
+        .team-total {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-unit {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .team-members {
+            text-align: left;
+            margin-top: 1.5rem;
+        }
+
+        .member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .member-name {
+            font-weight: 600;
+        }
+
+        .member-distance {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .input-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .input-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .chart-canvas {
+            max-height: 400px;
+        }
+
+        .history-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+
+        .history-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .history-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-member {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .history-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .history-distance {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        .delete-btn:hover {
+            background: #ff3742;
+        }
+
+        .edit-btn {
+            background: #3742fa;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        .edit-btn:hover {
+            background: #2f3542;
+        }
+
+        .history-item.editing {
+            background-color: #f1f2f6;
+            border: 2px solid #3742fa;
+        }
+
+                        .edit-form {
+            display: none;
+            grid-template-columns: 2fr 1fr auto auto;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .edit-form.show {
+            display: grid;
+        }
+
+        .edit-form input,
+        .edit-form select {
+            padding: 0.4rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .save-btn {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: #26d466;
+        }
+
+        .cancel-btn {
+            background: #747d8c;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            background: #57606f;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .input-form {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .team-total {
+                font-size: 2rem;
+            }
+        }
+
+        .winner-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: gold;
+            color: #333;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: none;
+        }
+
+        .winner-badge.show {
+            display: block;
+            animation: bounce 1s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🏃‍♂️ August Run 팀 대결 🏃‍♀️</h1>
+        <p>8월 마일리지 챌린지 - 팀별 누적 거리 경쟁</p>
+    </header>
+
+    <div class="container">
+        <!-- 팀 대시보드 -->
+        <div class="dashboard">
+            <div class="team-card team-a">
+                <div class="winner-badge" id="winnerA">🏆 1위</div>
+                <div class="team-name">🥛 우유팀</div>
+                <div class="team-total" id="teamATotal">0</div>
+                <div class="team-unit">km</div>
+                <div class="team-members" id="teamAMembers">
+                    <!-- 멤버별 기록이 여기에 표시됩니다 -->
+                </div>
+            </div>
+
+            <div class="team-card team-b">
+                <div class="winner-badge" id="winnerB">🏆 1위</div>
+                <div class="team-name">🍇 포도팀</div>
+                <div class="team-total" id="teamBTotal">0</div>
+                <div class="team-unit">km</div>
+                <div class="team-members" id="teamBMembers">
+                    <!-- 멤버별 기록이 여기에 표시됩니다 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 기록 입력 섹션 -->
+        <div class="input-section">
+            <h2 class="input-title">오늘의 러닝 기록 입력</h2>
+            <form class="input-form" id="recordForm">
+                <div class="form-group">
+                    <label for="memberSelect">크루원 선택</label>
+                    <select id="memberSelect" onchange="onMemberChange()" required>
+                        <option value="">크루원을 선택하세요</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="teamDisplay">소속팀</label>
+                    <div id="teamDisplay" style="padding: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px; background: #f8f9fa; color: #999;">팀 정보 없음</div>
+                </div>
+                <div class="form-group">
+                    <label for="distance">거리 (km)</label>
+                    <input type="number" id="distance" step="0.1" min="0" placeholder="0.0" required>
+                </div>
+                <button type="submit" class="add-btn">기록 추가</button>
+            </form>
+        </div>
+
+        <!-- 차트 섹션 -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3 class="chart-title">팀별 누적 거리</h3>
+                <canvas id="teamChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">일일 기록 추이</h3>
+                <canvas id="dailyChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- 기록 히스토리 -->
+        <div class="history-section">
+            <h2 class="history-title">최근 기록</h2>
+            <div class="history-list" id="historyList">
+                <!-- 기록 히스토리가 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 크루원 및 팀 설정 (실제 크루원 데이터)
+        const crewMembers = {
+            // 우유팀 멤버들
+            "goinggoing": "우유",
+            "JS Jeon": "우유",
+            "NJ_Run": "우유",
+            "거북아달려": "우유",
+            "검단이봉주": "우유",
+            "겨자색슈즈": "우유",
+            "돌아온빵꾸": "우유",
+            "마커스": "우유",
+            "먕먐": "우유",
+            "물냉명": "우유",
+            "봉무동러너": "우유",
+            "삼남매맘": "우유",
+            "상우쌍우": "우유",
+            "신욱재": "우유",
+            "우유키": "우유",
+            "후니": "우유",
+            
+            // 포도팀 멤버들
+            "권초게": "포도",
+            "라꾸라꾸조깅": "포도",
+            "마이세트": "포도",
+            "뭉공주": "포도",
+            "바다": "포도",
+            "삐약비약": "포도",
+            "세동이": "포도",
+            "수다맘": "포도",
+            "술우": "포도",
+            "얼쑤야": "포도",
+            "윤호근": "포도",
+            "이응내": "포도",
+            "자달매": "포도",
+            "정영준": "포도",
+            "하늘은평": "포도",
+            "하하하양": "포도",
+            "해피러너": "포도",
+            "후다닭": "포도"
+        };
+        
+        // 데이터 저장소 (JavaScript 변수 사용)
+        let records = [];
+        let dailyData = {};
+        
+        // 차트 인스턴스
+        let teamChart = null;
+        let dailyChart = null;
+
+        // 페이지 로드 시 크루원 리스트 생성
+        window.addEventListener('load', function() {
+            updateMemberSelect();
+        });
+
+        // 크루원 선택 드롭다운 업데이트
+        function updateMemberSelect() {
+            const memberSelect = document.getElementById('memberSelect');
+            memberSelect.innerHTML = '<option value="">크루원을 선택하세요</option>';
+            
+            // 우유팀 멤버들
+            const milkTeamMembers = Object.keys(crewMembers).filter(member => crewMembers[member] === '우유');
+            if (milkTeamMembers.length > 0) {
+                const milkTeamGroup = document.createElement('optgroup');
+                milkTeamGroup.label = '🥛 우유팀';
+                milkTeamMembers.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member;
+                    option.textContent = member;
+                    milkTeamGroup.appendChild(option);
+                });
+                memberSelect.appendChild(milkTeamGroup);
+            }
+            
+            // 포도팀 멤버들
+            const grapeTeamMembers = Object.keys(crewMembers).filter(member => crewMembers[member] === '포도');
+            if (grapeTeamMembers.length > 0) {
+                const grapeTeamGroup = document.createElement('optgroup');
+                grapeTeamGroup.label = '🍇 포도팀';
+                grapeTeamMembers.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member;
+                    option.textContent = member;
+                    grapeTeamGroup.appendChild(option);
+                });
+                memberSelect.appendChild(grapeTeamGroup);
+            }
+        }
+
+        // 크루원 선택 시 팀 자동 설정
+        function onMemberChange() {
+            const memberSelect = document.getElementById('memberSelect');
+            const teamDisplay = document.getElementById('teamDisplay');
+            const selectedMember = memberSelect.value;
+            
+            if (selectedMember && crewMembers[selectedMember]) {
+                const team = crewMembers[selectedMember];
+                teamDisplay.textContent = team === '우유' ? '🥛 우유팀' : '🍇 포도팀';
+                teamDisplay.style.color = team === '우유' ? '#FF6B35' : '#4ECDC4';
+                teamDisplay.style.fontWeight = 'bold';
+            } else {
+                teamDisplay.textContent = '팀 정보 없음';
+                teamDisplay.style.color = '#999';
+                teamDisplay.style.fontWeight = 'normal';
+            }
+        }
+
+        // 폼 제출 처리
+        document.getElementById('recordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedMember = document.getElementById('memberSelect').value;
+            const distance = parseFloat(document.getElementById('distance').value);
+            
+            if (!selectedMember) {
+                alert('크루원을 선택해주세요!');
+                return;
+            }
+            
+            if (!distance || distance <= 0) {
+                alert('올바른 거리를 입력해주세요!');
+                return;
+            }
+
+            const team = crewMembers[selectedMember];
+            
+            // 기록 추가
+            const record = {
+                id: Date.now(),
+                team: team,
+                name: selectedMember,
+                distance: distance,
+                date: new Date().toLocaleDateString('ko-KR'),
+                time: new Date().toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'})
+            };
+
+            records.push(record);
+            
+            // 폼 초기화
+            document.getElementById('recordForm').reset();
+            onMemberChange(); // 팀 표시 초기화
+            
+            // UI 업데이트
+            updateDisplay();
+            
+            alert(`${selectedMember}님의 ${distance}km 기록이 추가되었습니다!`);
+        });
+
+        // 기록 삭제
+        function deleteRecord(id) {
+            if (confirm('이 기록을 삭제하시겠습니까?')) {
+                records = records.filter(record => record.id !== id);
+                updateDisplay();
+            }
+        }
+
+        // 기록 수정 모드 진입
+        function editRecord(id) {
+            // 다른 편집 중인 항목들 취소
+            cancelAllEdits();
+            
+            const record = records.find(r => r.id === id);
+            if (!record) return;
+            
+            const historyItem = document.querySelector(`[data-record-id="${id}"]`);
+            if (!historyItem) return;
+            
+            historyItem.classList.add('editing');
+            const editForm = historyItem.querySelector('.edit-form');
+            editForm.classList.add('show');
+            
+            // 현재 값들을 폼에 설정
+            editForm.querySelector('.edit-team').value = record.team;
+            editForm.querySelector('.edit-name').value = record.name;
+            editForm.querySelector('.edit-distance').value = record.distance;
+        }
+
+        // 기록 수정 저장
+        function saveRecord(id) {
+            const historyItem = document.querySelector(`[data-record-id="${id}"]`);
+            const editForm = historyItem.querySelector('.edit-form');
+            
+            const selectedMember = editForm.querySelector('.edit-member').value;
+            const newDistance = parseFloat(editForm.querySelector('.edit-distance').value);
+            
+            if (!selectedMember || !newDistance || newDistance <= 0) {
+                alert('모든 필드를 올바르게 입력해주세요!');
+                return;
+            }
+            
+            // 기록 업데이트
+            const recordIndex = records.findIndex(r => r.id === id);
+            if (recordIndex !== -1) {
+                records[recordIndex].team = crewMembers[selectedMember];
+                records[recordIndex].name = selectedMember;
+                records[recordIndex].distance = newDistance;
+                
+                updateDisplay();
+                alert('기록이 수정되었습니다!');
+            }
+        }
+
+        // 기록 수정 취소
+        function cancelEdit(id) {
+            const historyItem = document.querySelector(`[data-record-id="${id}"]`);
+            if (historyItem) {
+                historyItem.classList.remove('editing');
+                const editForm = historyItem.querySelector('.edit-form');
+                editForm.classList.remove('show');
+            }
+        }
+
+        // 모든 편집 취소
+        function cancelAllEdits() {
+            document.querySelectorAll('.history-item.editing').forEach(item => {
+                item.classList.remove('editing');
+            });
+            document.querySelectorAll('.edit-form.show').forEach(form => {
+                form.classList.remove('show');
+            });
+        }
+
+        // 화면 업데이트
+        function updateDisplay() {
+            updateTeamTotals();
+            updateMemberLists();
+            updateCharts();
+            updateHistory();
+        }
+
+        // 팀 총합 업데이트
+        function updateTeamTotals() {
+            const milkTeamTotal = records.filter(r => r.team === '우유').reduce((sum, r) => sum + r.distance, 0);
+            const grapeTeamTotal = records.filter(r => r.team === '포도').reduce((sum, r) => sum + r.distance, 0);
+            
+            document.getElementById('teamATotal').textContent = milkTeamTotal.toFixed(1);
+            document.getElementById('teamBTotal').textContent = grapeTeamTotal.toFixed(1);
+            
+            // 승리 배지 표시
+            const winnerA = document.getElementById('winnerA');
+            const winnerB = document.getElementById('winnerB');
+            
+            winnerA.classList.remove('show');
+            winnerB.classList.remove('show');
+            
+            if (milkTeamTotal > grapeTeamTotal && milkTeamTotal > 0) {
+                winnerA.classList.add('show');
+            } else if (grapeTeamTotal > milkTeamTotal && grapeTeamTotal > 0) {
+                winnerB.classList.add('show');
+            }
+        }
+
+        // 멤버별 리스트 업데이트
+        function updateMemberLists() {
+            const milkTeamMembers = {};
+            const grapeTeamMembers = {};
+            
+            records.forEach(record => {
+                if (record.team === '우유') {
+                    milkTeamMembers[record.name] = (milkTeamMembers[record.name] || 0) + record.distance;
+                } else if (record.team === '포도') {
+                    grapeTeamMembers[record.name] = (grapeTeamMembers[record.name] || 0) + record.distance;
+                }
+            });
+            
+            updateMemberList('teamAMembers', milkTeamMembers);
+            updateMemberList('teamBMembers', grapeTeamMembers);
+        }
+
+        function updateMemberList(elementId, members) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            const sortedMembers = Object.entries(members).sort((a, b) => b[1] - a[1]);
+            
+            sortedMembers.forEach(([name, distance]) => {
+                const memberItem = document.createElement('div');
+                memberItem.className = 'member-item';
+                memberItem.innerHTML = `
+                    <span class="member-name">${name}</span>
+                    <span class="member-distance">${distance.toFixed(1)}km</span>
+                `;
+                container.appendChild(memberItem);
+            });
+            
+            if (sortedMembers.length === 0) {
+                container.innerHTML = '<div class="member-item"><span>아직 기록이 없습니다</span></div>';
+            }
+        }
+
+        // 차트 업데이트
+        function updateCharts() {
+            updateTeamChart();
+            updateDailyChart();
+        }
+
+        function updateTeamChart() {
+            const milkTeamTotal = records.filter(r => r.team === '우유').reduce((sum, r) => sum + r.distance, 0);
+            const grapeTeamTotal = records.filter(r => r.team === '포도').reduce((sum, r) => sum + r.distance, 0);
+            
+            const ctx = document.getElementById('teamChart').getContext('2d');
+            
+            if (teamChart) {
+                teamChart.destroy();
+            }
+            
+            teamChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['🥛 우유팀', '🍇 포도팀'],
+                    datasets: [{
+                        data: [milkTeamTotal, grapeTeamTotal],
+                        backgroundColor: ['#FF6B35', '#4ECDC4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateDailyChart() {
+            // 일별 데이터 집계
+            const dailyStats = {};
+            
+            records.forEach(record => {
+                if (!dailyStats[record.date]) {
+                    dailyStats[record.date] = { 우유: 0, 포도: 0 };
+                }
+                dailyStats[record.date][record.team] += record.distance;
+            });
+            
+            const dates = Object.keys(dailyStats).sort();
+            const milkTeamData = dates.map(date => dailyStats[date].우유);
+            const grapeTeamData = dates.map(date => dailyStats[date].포도);
+            
+            const ctx = document.getElementById('dailyChart').getContext('2d');
+            
+            if (dailyChart) {
+                dailyChart.destroy();
+            }
+            
+            dailyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: '🥛 우유팀',
+                        data: milkTeamData,
+                        borderColor: '#FF6B35',
+                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: '🍇 포도팀',
+                        data: grapeTeamData,
+                        borderColor: '#4ECDC4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '거리 (km)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 히스토리 업데이트
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            const sortedRecords = [...records].sort((a, b) => b.id - a.id).slice(0, 10);
+            
+            sortedRecords.forEach(record => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.setAttribute('data-record-id', record.id);
+                historyItem.innerHTML = `
+                    <div style="flex: 1;">
+                        <div class="history-info">
+                            <div class="history-member">${record.team}팀 - ${record.name}</div>
+                            <div class="history-date">${record.date} ${record.time}</div>
+                        </div>
+                        <div class="edit-form">
+                            <select class="edit-member">
+                                ${Object.keys(crewMembers).map(member => 
+                                    `<option value="${member}" ${record.name === member ? 'selected' : ''}>${member} (${crewMembers[member]}팀)</option>`
+                                ).join('')}
+                            </select>
+                            <input type="number" class="edit-distance" value="${record.distance}" step="0.1" min="0" placeholder="거리">
+                            <button class="save-btn" onclick="saveRecord(${record.id})">저장</button>
+                            <button class="cancel-btn" onclick="cancelEdit(${record.id})">취소</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <div class="history-distance">${record.distance}km</div>
+                        <button class="edit-btn" onclick="editRecord(${record.id})">수정</button>
+                        <button class="delete-btn" onclick="deleteRecord(${record.id})">삭제</button>
+                    </div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+            
+            if (sortedRecords.length === 0) {
+                historyList.innerHTML = '<div class="history-item"><span>아직 기록이 없습니다</span></div>';
+            }
+        }
+
+        // 초기 화면 설정
+        updateDisplay();
+    </script>
+</body>
+</html>
