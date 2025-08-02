@@ -5,175 +5,887 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>August Run - 팀 마일리지 대결</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <!-- 스타일 부분은 그대로 유지 -->
     <style>
-        /* ... 기존 CSS 코드 그대로 ... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .team-a {
+            border-top: 5px solid #FF6B35;
+        }
+
+        .team-b {
+            border-top: 5px solid #4ECDC4;
+        }
+
+        .team-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid;
+            flex-shrink: 0;
+        }
+
+        .team-a .team-image {
+            border-color: #FF6B35;
+        }
+
+        .team-b .team-image {
+            border-color: #4ECDC4;
+        }
+
+        .team-emoji {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            border: 4px solid;
+            flex-shrink: 0;
+        }
+
+        .team-a .team-emoji {
+            background: #FF6B35;
+            border-color: #FF6B35;
+        }
+
+        .team-b .team-emoji {
+            background: #4ECDC4;
+            border-color: #4ECDC4;
+        }
+
+        .team-content {
+            flex: 1;
+            text-align: center;
+        }
+
+        .team-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .team-a .team-name {
+            color: #FF6B35;
+        }
+
+        .team-b .team-name {
+            color: #4ECDC4;
+        }
+
+        .team-total {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-unit {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .team-members {
+            text-align: left;
+            margin-top: 1.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .member-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .member-name {
+            font-weight: 600;
+        }
+
+        .member-distance {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .input-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .input-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .team-display {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #999;
+            font-weight: normal;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .chart-canvas {
+            max-height: 400px;
+        }
+
+        .history-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .history-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+
+        .history-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .history-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-member {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .history-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .history-distance {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        .delete-btn:hover {
+            background: #ff3742;
+        }
+
+        .winner-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: gold;
+            color: #333;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: none;
+        }
+
+        .winner-badge.show {
+            display: block;
+            animation: bounce 1s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+
+        .loading-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            z-index: 10000;
+            font-weight: bold;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .input-form {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .team-total {
+                font-size: 2rem;
+            }
+
+            .team-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .team-image, .team-emoji {
+                width: 80px;
+                height: 80px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- HTML 본문 부분 (팀 카드, 입력 폼, 차트, 히스토리) 그대로 유지 -->
+    <div class="loading-message" id="loadingMessage">로딩 중...</div>
 
-    <!-- Google Sheets API 연동 스크립트 -->
+    <header class="header">
+        <h1>🏃‍♂️ August Run 팀 대결 🏃‍♀️</h1>
+        <p>8월 마일리지 챌린지 - 팀별 누적 거리 경쟁</p>
+    </header>
+
+    <div class="container">
+        <!-- 팀 대시보드 -->
+        <div class="dashboard">
+            <div class="team-card team-a">
+                <div class="winner-badge" id="winnerA">🏆 1위</div>
+                <img src="https://raw.githubusercontent.com/rundatesj/Runday_2508/main/%EC%9A%B0%EC%9C%A0.jpg" 
+                     alt="우유팀" class="team-image" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="team-emoji">🥛</div>
+                <div class="team-content">
+                    <div class="team-name">🥛 우유팀</div>
+                    <div class="team-total" id="teamATotal">0</div>
+                    <div class="team-unit">km</div>
+                    <div class="team-members" id="teamAMembers">
+                        <div class="member-item"><span>아직 기록이 없습니다</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="team-card team-b">
+                <div class="winner-badge" id="winnerB">🏆 1위</div>
+                <img src="https://raw.githubusercontent.com/rundatesj/Runday_2508/main/%ED%8F%AC%EB%8F%84.jpg" 
+                     alt="포도팀" class="team-image"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="team-emoji">🍇</div>
+                <div class="team-content">
+                    <div class="team-name">🍇 포도팀</div>
+                    <div class="team-total" id="teamBTotal">0</div>
+                    <div class="team-unit">km</div>
+                    <div class="team-members" id="teamBMembers">
+                        <div class="member-item"><span>아직 기록이 없습니다</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 기록 입력 섹션 -->
+        <div class="input-section">
+            <h2 class="input-title">오늘의 러닝 기록 입력</h2>
+            <form class="input-form" id="recordForm">
+                <div class="form-group">
+                    <label for="memberSelect">크루원 선택</label>
+                    <select id="memberSelect" required>
+                        <option value="">크루원을 선택하세요</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>소속팀</label>
+                    <div id="teamDisplay" class="team-display">팀 정보 없음</div>
+                </div>
+                <div class="form-group">
+                    <label for="distance">거리 (km)</label>
+                    <input type="number" id="distance" step="0.1" min="0" placeholder="0.0" required>
+                </div>
+                <button type="submit" class="add-btn">기록 추가</button>
+            </form>
+        </div>
+
+        <!-- 차트 섹션 -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3 class="chart-title">팀별 누적 거리</h3>
+                <canvas id="teamChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">개인별 누적 기록</h3>
+                <canvas id="dailyChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- 기록 히스토리 -->
+        <div class="history-section">
+            <h2 class="history-title">최근 기록</h2>
+            <div class="history-list" id="historyList">
+                <div class="history-item"><span>아직 기록이 없습니다</span></div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxGia7tHLCxHqmuJYV_P_t8V6O6umdN3wAOCXrN_Taw6HV2AGRwukGwx5XrwE7_vjwK/exec";
-
-        const crewMembers = {
-            "goinggoing": "우유",
-            "JS Jeon": "우유",
-            "NJ_Run": "우유",
-            "거북아달려": "우유",
-            "검단이봉주": "우유",
-            "겨자색슈즈": "우유",
-            "돌아온빵꾸": "우유",
-            "마커스": "우유",
-            "먕먐": "우유",
-            "물냉명": "우유",
-            "봉무동러너": "우유",
-            "삼남매맘": "우유",
-            "상우쌍우": "우유",
-            "신욱재": "우유",
-            "우유키": "우유",
-            "후니": "우유",
-            "권초게": "포도",
-            "라꾸라꾸조깅": "포도",
-            "마이세트": "포도",
-            "뭉공주": "포도",
-            "바다": "포도",
-            "삐약비약": "포도",
-            "세동이": "포도",
-            "수다맘": "포도",
-            "술우": "포도",
-            "얼쑤야": "포도",
-            "윤호근": "포도",
-            "이응내": "포도",
-            "자달매": "포도",
-            "정영준": "포도",
-            "하늘은평": "포도",
-            "하하하양": "포도",
-            "해피러너": "포도",
-            "후다닭": "포도"
+        // 설정
+        const SHEETS_CONFIG = {
+            webAppUrl: 'https://script.google.com/macros/s/AKfycbwwXlFUGhnnsmDXu3Dkci3Z5Ycw3p9s2TulB6pYPOcEZjiGAl9Iq-NlU7sZe7PNhcAqnw/exec'
         };
 
+        const crewMembers = {
+            "goinggoing": "우유", "JS Jeon": "우유", "NJ_Run": "우유", "거북아달려": "우유",
+            "검단이봉주": "우유", "겨자색슈즈": "우유", "돌아온빵꾸": "우유", "마커스": "우유",
+            "먕먐": "우유", "물냉명": "우유", "봉무동러너": "우유", "삼남매맘": "우유",
+            "상우쌍우": "우유", "신욱재": "우유", "우유키": "우유", "후니": "우유",
+            "권초게": "포도", "라꾸라꾸조깅": "포도", "마이세트": "포도", "뭉공주": "포도",
+            "바다": "포도", "삐약비약": "포도", "세동이": "포도", "수다맨": "포도",
+            "술우": "포도", "얼쑤야": "포도", "윤호근": "포도", "이응내": "포도",
+            "자달매": "포도", "정영준": "포도", "하늘은평": "포도", "하하하양": "포도",
+            "해피러너": "포도", "후다닭": "포도"
+        };
+        
         let records = [];
         let teamChart = null;
         let dailyChart = null;
+        let isLoading = false;
 
+        // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
-            updateMemberSelect();
-            loadAndRender();
+            setupMemberSelect();
+            setupEventListeners();
+            loadFromSheets();
         });
 
-        function updateMemberSelect() {
-            const memberSelect = document.getElementById('memberSelect');
-            memberSelect.innerHTML = '<option value="">크루원을 선택하세요</option>';
+        function setupMemberSelect() {
+            const select = document.getElementById('memberSelect');
+            select.innerHTML = '<option value="">크루원을 선택하세요</option>';
+            
             const milkMembers = Object.keys(crewMembers).filter(m => crewMembers[m] === '우유');
             const grapeMembers = Object.keys(crewMembers).filter(m => crewMembers[m] === '포도');
-
-            const milkGroup = document.createElement('optgroup');
-            milkGroup.label = '🥛 우유팀';
-            milkMembers.forEach(member => {
-                const option = document.createElement('option');
-                option.value = member;
-                option.textContent = member;
-                milkGroup.appendChild(option);
-            });
-            memberSelect.appendChild(milkGroup);
-
-            const grapeGroup = document.createElement('optgroup');
-            grapeGroup.label = '🍇 포도팀';
-            grapeMembers.forEach(member => {
-                const option = document.createElement('option');
-                option.value = member;
-                option.textContent = member;
-                grapeGroup.appendChild(option);
-            });
-            memberSelect.appendChild(grapeGroup);
+            
+            if (milkMembers.length > 0) {
+                const milkGroup = document.createElement('optgroup');
+                milkGroup.label = '🥛 우유팀';
+                milkMembers.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member;
+                    option.textContent = member;
+                    milkGroup.appendChild(option);
+                });
+                select.appendChild(milkGroup);
+            }
+            
+            if (grapeMembers.length > 0) {
+                const grapeGroup = document.createElement('optgroup');
+                grapeGroup.label = '🍇 포도팀';
+                grapeMembers.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member;
+                    option.textContent = member;
+                    grapeGroup.appendChild(option);
+                });
+                select.appendChild(grapeGroup);
+            }
         }
 
-        document.getElementById('memberSelect').addEventListener('change', function() {
-            const selected = this.value;
-            const team = crewMembers[selected];
-            const teamDisplay = document.getElementById('teamDisplay');
-            if (team === '우유') {
-                teamDisplay.textContent = '🥛 우유팀';
-                teamDisplay.style.color = '#FF6B35';
-            } else if (team === '포도') {
-                teamDisplay.textContent = '🍇 포도팀';
-                teamDisplay.style.color = '#4ECDC4';
-            } else {
-                teamDisplay.textContent = '팀 정보 없음';
-                teamDisplay.style.color = '#999';
-            }
-        });
-
-        document.getElementById('recordForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const selectedMember = document.getElementById('memberSelect').value;
-            const distance = parseFloat(document.getElementById('distance').value);
-
-            if (!selectedMember || !distance || distance <= 0) {
-                alert('입력값을 확인하세요.');
-                return;
-            }
-
-            const team = crewMembers[selectedMember];
-            const now = new Date();
-
-            const record = {
-                id: Date.now(),
-                team: team,
-                name: selectedMember,
-                distance: distance,
-                date: now.toLocaleDateString('ko-KR'),
-                time: now.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'})
-            };
-
-            await fetch(SHEET_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(record)
+        function setupEventListeners() {
+            document.getElementById('memberSelect').addEventListener('change', function() {
+                const member = this.value;
+                const display = document.getElementById('teamDisplay');
+                
+                if (member && crewMembers[member]) {
+                    const team = crewMembers[member];
+                    display.textContent = team === '우유' ? '🥛 우유팀' : '🍇 포도팀';
+                    display.style.color = team === '우유' ? '#FF6B35' : '#4ECDC4';
+                    display.style.fontWeight = 'bold';
+                } else {
+                    display.textContent = '팀 정보 없음';
+                    display.style.color = '#999';
+                    display.style.fontWeight = 'normal';
+                }
             });
 
-            alert('기록이 추가되었습니다!');
-            this.reset();
-            document.getElementById('teamDisplay').textContent = '팀 정보 없음';
-            loadAndRender();
-        });
+            document.getElementById('recordForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (isLoading) return;
+                
+                const member = document.getElementById('memberSelect').value;
+                const distance = parseFloat(document.getElementById('distance').value);
+                
+                if (!member) {
+                    alert('크루원을 선택해주세요!');
+                    return;
+                }
+                
+                if (!distance || distance <= 0) {
+                    alert('올바른 거리를 입력해주세요!');
+                    return;
+                }
 
-        async function loadAndRender() {
-            const res = await fetch(SHEET_API_URL);
-            records = await res.json();
+                const now = new Date();
+                const record = {
+                    id: Date.now(),
+                    team: crewMembers[member],
+                    name: member,
+                    distance: distance,
+                    date: now.toLocaleDateString('ko-KR'),
+                    time: now.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'}),
+                    timestamp: now.toISOString()
+                };
+
+                records.push(record);
+                updateDisplay();
+                this.reset();
+                document.getElementById('teamDisplay').textContent = '팀 정보 없음';
+                document.getElementById('teamDisplay').style.color = '#999';
+                document.getElementById('teamDisplay').style.fontWeight = 'normal';
+                
+                const success = await saveToSheets(record);
+                if (success) {
+                    alert('기록이 Google Sheets에 저장되었습니다!');
+                } else {
+                    alert('기록이 추가되었지만 Google Sheets 저장에 실패했습니다.');
+                }
+            });
+        }
+
+        function showLoading(message) {
+            const loading = document.getElementById('loadingMessage');
+            loading.textContent = message;
+            loading.style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingMessage').style.display = 'none';
+        }
+
+        async function loadFromSheets() {
+            try {
+                showLoading('데이터를 불러오는 중...');
+                const response = await fetch(SHEETS_CONFIG.webAppUrl);
+                const data = await response.json();
+                
+                if (data.success && data.records) {
+                    records = data.records.map(r => ({
+                        id: r.ID || Date.now() + Math.random(),
+                        team: r['팀'] || r.team,
+                        name: r['이름'] || r.name,
+                        distance: parseFloat(r['거리'] || r.distance || 0),
+                        date: r['날짜'] || r.date,
+                        time: r['시간'] || r.time,
+                        timestamp: r['타임스탬프'] || r.timestamp
+                    }));
+                }
+                updateDisplay();
+            } catch (error) {
+                console.error('데이터 로드 실패:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function saveToSheets(record) {
+            try {
+                showLoading('저장 중...');
+                const response = await fetch(SHEETS_CONFIG.webAppUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create',
+                        record: record
+                    })
+                });
+                const result = await response.json();
+                return result.success;
+            } catch (error) {
+                console.error('저장 실패:', error);
+                return false;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteRecord(id) {
+            if (!confirm('이 기록을 삭제하시겠습니까?')) return;
+            
+            records = records.filter(r => r.id !== id);
             updateDisplay();
+            
+            try {
+                await fetch(SHEETS_CONFIG.webAppUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        id: id
+                    })
+                });
+            } catch (error) {
+                console.error('삭제 실패:', error);
+            }
         }
 
         function updateDisplay() {
-            // 팀별 총합, 차트, 히스토리 업데이트 그대로 호출
             updateTeamTotals();
             updateMemberLists();
             updateCharts();
             updateHistory();
         }
 
-        async function deleteRecord(id) {
-            await fetch(`${SHEET_API_URL}?id=${id}`, { method: 'DELETE' });
-            loadAndRender();
+        function updateTeamTotals() {
+            const milkTotal = records.filter(r => r.team === '우유').reduce((sum, r) => sum + r.distance, 0);
+            const grapeTotal = records.filter(r => r.team === '포도').reduce((sum, r) => sum + r.distance, 0);
+            
+            document.getElementById('teamATotal').textContent = milkTotal.toFixed(1);
+            document.getElementById('teamBTotal').textContent = grapeTotal.toFixed(1);
+            
+            const winnerA = document.getElementById('winnerA');
+            const winnerB = document.getElementById('winnerB');
+            
+            winnerA.classList.remove('show');
+            winnerB.classList.remove('show');
+            
+            if (milkTotal > grapeTotal && milkTotal > 0) {
+                winnerA.classList.add('show');
+            } else if (grapeTotal > milkTotal && grapeTotal > 0) {
+                winnerB.classList.add('show');
+            }
         }
 
-        // 기존 updateTeamTotals, updateMemberLists, updateCharts, updateHistory 함수는 그대로 유지
+        function updateMemberLists() {
+            const milkMembers = {};
+            const grapeMembers = {};
+            
+            records.forEach(record => {
+                if (record.team === '우유') {
+                    milkMembers[record.name] = (milkMembers[record.name] || 0) + record.distance;
+                } else if (record.team === '포도') {
+                    grapeMembers[record.name] = (grapeMembers[record.name] || 0) + record.distance;
+                }
+            });
+            
+            updateMemberList('teamAMembers', milkMembers);
+            updateMemberList('teamBMembers', grapeMembers);
+        }
 
-        function bindDeleteButtons() {
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    if (confirm('정말 삭제하시겠습니까?')) {
-                        deleteRecord(id);
-                    }
-                });
+        function updateMemberList(elementId, members) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            const sorted = Object.entries(members).sort((a, b) => b[1] - a[1]);
+            
+            if (sorted.length === 0) {
+                container.innerHTML = '<div class="member-item"><span>아직 기록이 없습니다</span></div>';
+                return;
+            }
+            
+            sorted.forEach(([name, distance]) => {
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                item.innerHTML = '<span class="member-name">' + name + '</span><span class="member-distance">' + distance.toFixed(1) + 'km</span>';
+                container.appendChild(item);
             });
         }
 
-        // updateHistory 함수 내 delete 버튼 이벤트 등록할 때 bindDeleteButtons() 호출
+        function updateCharts() {
+            updateTeamChart();
+            updatePersonalChart();
+        }
 
+        function updateTeamChart() {
+            const milkTotal = records.filter(r => r.team === '우유').reduce((sum, r) => sum + r.distance, 0);
+            const grapeTotal = records.filter(r => r.team === '포도').reduce((sum, r) => sum + r.distance, 0);
+            
+            const ctx = document.getElementById('teamChart').getContext('2d');
+            
+            if (teamChart) teamChart.destroy();
+            
+            teamChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['🥛 우유팀', '🍇 포도팀'],
+                    datasets: [{
+                        data: [milkTotal, grapeTotal],
+                        backgroundColor: ['#FF6B35', '#4ECDC4'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function updatePersonalChart() {
+            const memberStats = {};
+            
+            records.forEach(record => {
+                if (!memberStats[record.name]) {
+                    memberStats[record.name] = { total: 0, team: record.team };
+                }
+                memberStats[record.name].total += record.distance;
+            });
+            
+            const milkMembers = Object.entries(memberStats)
+                .filter(([, data]) => data.team === '우유')
+                .sort(([,a], [,b]) => b.total - a.total)
+                .slice(0, 8);
+                
+            const grapeMembers = Object.entries(memberStats)
+                .filter(([, data]) => data.team === '포도')
+                .sort(([,a], [,b]) => b.total - a.total)
+                .slice(0, 8);
+            
+            const allTop = [...milkMembers, ...grapeMembers].sort(([,a], [,b]) => b.total - a.total);
+            
+            const names = allTop.map(([name]) => name);
+            const distances = allTop.map(([, data]) => data.total);
+            const colors = allTop.map(([, data]) => data.team === '우유' ? 'rgba(255, 107, 53, 0.7)' : 'rgba(78, 205, 196, 0.7)');
+            const borders = allTop.map(([, data]) => data.team === '우유' ? '#FF6B35' : '#4ECDC4');
+            
+            const ctx = document.getElementById('dailyChart').getContext('2d');
+            
+            if (dailyChart) dailyChart.destroy();
+            
+            dailyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [{
+                        label: '누적 거리 (km)',
+                        data: distances,
+                        backgroundColor: colors,
+                        borderColor: borders,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: '거리 (km)' }
+                        },
+                        x: { 
+                            title: { display: true, text: '크루원' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const name = context.label;
+                                    const team = memberStats[name].team;
+                                    return team + '팀 ' + name + ': ' + context.parsed.y.toFixed(1) + 'km';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+            
+            const sorted = [...records].sort((a, b) => b.id - a.id).slice(0, 10);
+            
+            if (sorted.length === 0) {
+                list.innerHTML = '<div class="history-item"><span>아직 기록이 없습니다</span></div>';
+                return;
+            }
+            
+            sorted.forEach(record => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `
+                    <div class="history-info">
+                        <div class="history-member">${record.team}팀 - ${record.name}</div>
+                        <div class="history-date">${record.date} ${record.time}</div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <div class="history-distance">${record.distance}km</div>
+                        <button class="delete-btn" onclick="deleteRecord(${record.id})">삭제</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
     </script>
 </body>
 </html>
