@@ -3,58 +3,14 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>August Run - Reset Version</title>
+    <title>August Run</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header>
-        <h1>🏃 August Run - 팀 대시보드 🏃‍♀️</h1>
-    </header>
-    <main>
-        <section class="dashboard">
-            <div class="team-card" id="teamA">
-                <h2>🥛 우유팀</h2>
-                <p><span id="teamATotal">0</span> km</p>
-            </div>
-            <div class="team-card" id="teamB">
-                <h2>🍇 포도팀</h2>
-                <p><span id="teamBTotal">0</span> km</p>
-            </div>
-        </section>
-
-        <section class="form-section">
-            <h2>기록 입력</h2>
-            <form id="recordForm">
-                <select id="memberSelect" required>
-                    <option value="">크루원을 선택하세요</option>
-                </select>
-                <input type="date" id="dateInput" required>
-                <input type="number" id="distanceInput" placeholder="거리 (km)" step="0.1" required>
-                <button type="submit">기록 추가</button>
-            </form>
-        </section>
-
-        <section class="history-section">
-            <h2>최근 기록</h2>
-            <ul id="historyList">
-                <li>아직 기록이 없습니다</li>
-            </ul>
-        </section>
-
-        <section class="charts-section">
-            <div>
-                <h3>팀별 누적 거리</h3>
-                <canvas id="teamChart"></canvas>
-            </div>
-            <div>
-                <h3>개인별 누적 거리</h3>
-                <canvas id="personalChart"></canvas>
-            </div>
-        </section>
-    </main>
+    <div id="dashboard"></div>
+    <div id="form-section"></div>
+    <div id="history-section"></div>
     <script src="data.js"></script>
-    <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
