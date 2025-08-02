@@ -3,17 +3,19 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart
 import { Trophy, Users, User, Calendar, MapPin } from 'lucide-react';
 
 const RunningCrewDashboard = () => {
-  // 크루원 데이터 (실제 닉네임과 팀)
+  // 크루원 데이터 (팀별로 분할)
   const crewMembers = {
-    '우유': [
-      'goinggoing', 'JS Jeon', 'NJ_Run', '거북아달려', '검단이봉주', '겨자색슈즈',
-      '돌아온빵꾸', '마커스', '먕먐', '물냉명', '봉무동러너', '삼남매맘',
-      '상우쌍우', '세동이', '신욱재', '우유키', '후니'
+    'Team A': [
+      'runner001', 'runner002', 'runner003', 'runner004', 'runner005',
+      'runner006', 'runner007', 'runner008', 'runner009', 'runner010',
+      'runner011', 'runner012', 'runner013', 'runner014', 'runner015',
+      'runner016', 'runner017'
     ],
-    '포도': [
-      '권초게', '라꾸라꾸조깅', '마이세트', '뭉공주', '바다', '삐약비약',
-      '수다맘', '술우', '얼쑤야', '윤호근', '이응내', '자달매',
-      '정영준', '하늘은평', '하하하양', '해피러너', '후다닭'
+    'Team B': [
+      'runner018', 'runner019', 'runner020', 'runner021', 'runner022',
+      'runner023', 'runner024', 'runner025', 'runner026', 'runner027',
+      'runner028', 'runner029', 'runner030', 'runner031', 'runner032',
+      'runner033', 'runner034'
     ]
   };
 
@@ -72,7 +74,7 @@ const RunningCrewDashboard = () => {
 
   // 팀별 누적 기록 계산
   const getTeamTotals = () => {
-    const totals = { '우유': 0, '포도': 0 };
+    const totals = { 'Team A': 0, 'Team B': 0 };
     records.forEach(record => {
       totals[record.team] += record.distance;
     });
@@ -98,23 +100,23 @@ const RunningCrewDashboard = () => {
     records.forEach(record => {
       const date = record.date;
       if (!dailyData[date]) {
-        dailyData[date] = { date, '우유': 0, '포도': 0 };
+        dailyData[date] = { date, 'Team A': 0, 'Team B': 0 };
       }
       dailyData[date][record.team] += record.distance;
     });
 
     // 누적 계산
     const sortedDates = Object.keys(dailyData).sort();
-    let milkTotalRunning = 0;
-    let grapeTotalRunning = 0;
+    let teamATotalRunning = 0;
+    let teamBTotalRunning = 0;
 
     return sortedDates.map(date => {
-      milkTotalRunning += dailyData[date]['우유'];
-      grapeTotalRunning += dailyData[date]['포도'];
+      teamATotalRunning += dailyData[date]['Team A'];
+      teamBTotalRunning += dailyData[date]['Team B'];
       return {
         date,
-        '우유': Math.round(milkTotalRunning * 10) / 10,
-        '포도': Math.round(grapeTotalRunning * 10) / 10
+        'Team A': Math.round(teamATotalRunning * 10) / 10,
+        'Team B': Math.round(teamBTotalRunning * 10) / 10
       };
     });
   };
@@ -150,28 +152,28 @@ const RunningCrewDashboard = () => {
 
         {/* 팀 점수판 */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
                   <Users size={24} />
-                  🥛 우유팀
+                  Team A
                 </h3>
-                <p className="text-3xl font-bold">{Math.round(teamTotals['우유'] * 10) / 10} km</p>
-                <p className="text-sm opacity-90">{crewMembers['우유'].length}명</p>
+                <p className="text-3xl font-bold">{Math.round(teamTotals['Team A'] * 10) / 10} km</p>
+                <p className="text-sm opacity-90">{crewMembers['Team A'].length}명</p>
               </div>
               <Trophy size={48} className="opacity-70" />
             </div>
           </div>
-          <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
                   <Users size={24} />
-                  🍇 포도팀
+                  Team B
                 </h3>
-                <p className="text-3xl font-bold">{Math.round(teamTotals['포도'] * 10) / 10} km</p>
-                <p className="text-sm opacity-90">{crewMembers['포도'].length}명</p>
+                <p className="text-3xl font-bold">{Math.round(teamTotals['Team B'] * 10) / 10} km</p>
+                <p className="text-sm opacity-90">{crewMembers['Team B'].length}명</p>
               </div>
               <Trophy size={48} className="opacity-70" />
             </div>
@@ -187,29 +189,19 @@ const RunningCrewDashboard = () => {
           <div className="grid md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                크루원 닉네임
+                크루원 ID
               </label>
-              <select
+              <input
+                type="text"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
+                placeholder="runner001"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">닉네임을 선택하세요</option>
-                <optgroup label="🥛 우유팀">
-                  {crewMembers['우유'].map(member => (
-                    <option key={member} value={member}>{member}</option>
-                  ))}
-                </optgroup>
-                <optgroup label="🍇 포도팀">
-                  {crewMembers['포도'].map(member => (
-                    <option key={member} value={member}>{member}</option>
-                  ))}
-                </optgroup>
-              </select>
+              />
               {userTeam && (
                 <p className="text-sm mt-1 text-gray-600">
-                  소속팀: <span className={`font-bold ${userTeam === '우유' ? 'text-purple-500' : 'text-indigo-500'}`}>
-                    {userTeam === '우유' ? '🥛 우유팀' : '🍇 포도팀'}
+                  소속팀: <span className={`font-bold ${userTeam === 'Team A' ? 'text-red-500' : 'text-blue-500'}`}>
+                    {userTeam}
                   </span>
                 </p>
               )}
@@ -265,17 +257,17 @@ const RunningCrewDashboard = () => {
                   <Legend />
                   <Line 
                     type="monotone" 
-                    dataKey="우유" 
-                    stroke="#8b5cf6" 
+                    dataKey="Team A" 
+                    stroke="#ef4444" 
                     strokeWidth={3}
-                    dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                    dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
                   />
                   <Line 
                     type="monotone" 
-                    dataKey="포도" 
-                    stroke="#6366f1" 
+                    dataKey="Team B" 
+                    stroke="#3b82f6" 
                     strokeWidth={3}
-                    dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -331,9 +323,9 @@ const RunningCrewDashboard = () => {
                     <td className="p-3 font-medium">{record.userId}</td>
                     <td className="p-3">
                       <span className={`px-2 py-1 rounded text-sm ${
-                        record.team === '우유' ? 'bg-purple-100 text-purple-700' : 'bg-indigo-100 text-indigo-700'
+                        record.team === 'Team A' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
                       }`}>
-                        {record.team === '우유' ? '🥛 우유팀' : '🍇 포도팀'}
+                        {record.team}
                       </span>
                     </td>
                     <td className="p-3">{record.date}</td>
